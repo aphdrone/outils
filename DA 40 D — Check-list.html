@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)file:///Users/arnaud/Downloads/DA40D_checklist.html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DA 40 D">
+<title>DA 40 D — Check-list</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a1a;min-height:100vh}
+.header{background:#1a2a4a;color:#fff;padding:16px 16px 12px;position:sticky;top:0;z-index:100}
+.header h1{font-size:20px;font-weight:600;letter-spacing:.5px}
+.header .sub{font-size:11px;opacity:.6;margin-top:2px}
+.progress-bar{background:rgba(255,255,255,.2);border-radius:4px;height:5px;margin-top:10px;overflow:hidden}
+.progress-fill{background:#4ecca3;height:100%;border-radius:4px;transition:width .4s ease}
+.progress-text{font-size:11px;opacity:.7;margin-top:5px;text-align:right}
+
+.phase-tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;background:#1a2a4a;border-top:1px solid rgba(255,255,255,.1);scrollbar-width:none;position:sticky;top:76px;z-index:99}
+.phase-tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab.active{background:#fff;color:#1a2a4a;border-color:#fff}
+.tab.done{border-color:#4ecca3;color:#4ecca3}
+
+.content{padding:12px 14px 80px}
+.section{margin-bottom:14px}
+.section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#888;padding:6px 0 5px;border-bottom:1px solid #ddd;margin-bottom:6px}
+
+.item{display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:10px;background:#fff;margin-bottom:5px;cursor:pointer;border:1px solid #e8e8e8;transition:background .1s,border .1s;-webkit-user-select:none;user-select:none}
+.item:active{background:#f5f5f5}
+.item.checked{background:#f0faf6;border-color:#b8e8d6}
+.item.checked .item-label{color:#aaa;text-decoration:line-through}
+.item.checked .item-value{color:#aaa}
+
+.check-circle{width:24px;height:24px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s}
+.item.checked .check-circle{background:#1d9e75;border-color:#1d9e75}
+.check-icon{display:none;width:13px;height:13px}
+.item.checked .check-icon{display:block}
+
+.item-label{font-size:14px;color:#1a1a1a;flex:1;line-height:1.4}
+.item-value{font-size:12px;color:#1a2a4a;font-weight:600;white-space:nowrap;background:#eef1f7;padding:2px 7px;border-radius:6px;margin-top:1px;flex-shrink:0}
+.item.checked .item-value{background:#e0f0ea;color:#1d9e75}
+
+.vitesses-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px}
+.vitesses-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:10px;overflow:hidden;min-width:340px}
+.vitesses-table th{background:#1a2a4a;color:#fff;padding:8px 10px;text-align:left;font-weight:500;font-size:11px}
+.vitesses-table td{padding:7px 10px;border-bottom:1px solid #f0f0f0;color:#1a1a1a;vertical-align:middle}
+.vitesses-table tr:last-child td{border-bottom:none}
+.vitesses-table tr:nth-child(even) td{background:#f8f9fb}
+.vitesses-table .highlight{font-weight:600;color:#1a2a4a}
+.mass-info{font-size:11px;color:#888;text-align:center;margin-top:8px;line-height:1.6}
+
+.reset-btn{position:fixed;bottom:20px;right:16px;background:#fff;border:1.5px solid #e74c3c;color:#e74c3c;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.reset-btn:active{background:#fdf0f0}
+
+.note{font-size:10px;color:#bbb;text-align:center;padding:0 16px 16px;line-height:1.6}
+
+@media (prefers-color-scheme:dark){
+  body{background:#0f1724;color:#e8eaf0}
+  .item{background:#1e2d45;border-color:#2a3d5a}
+  .item:active{background:#253550}
+  .item.checked{background:#1a3530;border-color:#1d6b50}
+  .item-label{color:#e8eaf0}
+  .item.checked .item-label{color:#666}
+  .item-value{background:#2a3d5a;color:#8ab4e0}
+  .item.checked .item-value{background:#1a3530;color:#4ecca3}
+  .section-title{color:#666;border-color:#2a3d5a}
+  .check-circle{border-color:#3a5070}
+  .vitesses-table{background:#1e2d45}
+  .vitesses-table td{color:#e8eaf0;border-color:#2a3d5a}
+  .vitesses-table tr:nth-child(even) td{background:#253550}
+  .reset-btn{background:#1a2535;border-color:#e74c3c;color:#e74c3c;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+  .content{color:#e8eaf0}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>DA 40 D — Check-list</h1>
+  <div class="sub">Aéroclub de la Haute-Saône · Éd. 01-15 · Ne remplace pas le Manuel de Vol</div>
+  <div class="progress-bar"><div class="progress-fill" id="pfill" style="width: 0%;"></div></div>
+  <div class="progress-text" id="ptext">0 / 178 cochés (0%)</div>
+</div>
+
+<div class="phase-tabs" id="tabs"><div class="tab" onclick="switchPhase(0)" role="tab">Prévol int.</div><div class="tab" onclick="switchPhase(1)" role="tab">Prévol ext.</div><div class="tab active" onclick="switchPhase(2)" role="tab">Mise en route</div><div class="tab" onclick="switchPhase(3)" role="tab">Après MER</div><div class="tab" onclick="switchPhase(4)" role="tab">Avant décol.</div><div class="tab" onclick="switchPhase(5)" role="tab">En vol</div><div class="tab" onclick="switchPhase(6)" role="tab">Après attrx</div><div class="tab" onclick="switchPhase(7)" role="tab">Vitesses</div></div>
+<div class="content" id="content"><div class="section"><div class="section-title">Vérifications avant mise en route</div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,0)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Vérifications prévol</span><span class="item-value">Effectuées</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,1)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Bagages et barre de remorquage</span><span class="item-value">Sangles</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,2)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Vanne secours carburant</span><span class="item-value">Normal</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,3)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Manette de puissance</span><span class="item-value">Ralenti</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,4)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Frein de parc</span><span class="item-value">Tiré</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,5)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Vanne Alternate Air</span><span class="item-value">Fermée</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,6)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Breakers</span><span class="item-value">Enfoncés</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,7)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Transfert carburant</span><span class="item-value">OFF</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,8)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Avionic Master</span><span class="item-value">OFF</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,9)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Essential Bus</span><span class="item-value">OFF</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,10)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Electric Master</span><span class="item-value">OFF</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,11)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Éclairages</span><span class="item-value">Coupés</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,12)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Réchauffage Pitot</span><span class="item-value">Coupé</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,13)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Vanne statique secours</span><span class="item-value">Fermée</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,14)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">ECU Swap</span><span class="item-value">Auto</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,15)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Engine Master</span><span class="item-value">OFF</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,16)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Éclairage instruments et casquette</span><span class="item-value">Coupé</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,17)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Commande volets</span><span class="item-value">Rentrés</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,18)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Electric Master</span><span class="item-value">ON</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,19)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Écran affichage pannes + instruments moteur</span><span class="item-value">Vérifiés</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,20)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Poussoir acquittement panne</span><span class="item-value">Enfoncé</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,21)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Lampe bas niveau liquide refroidissement</span><span class="item-value">Éteinte</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,22)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Palonniers</span><span class="item-value">Réglés</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,23)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Briefing passagers</span><span class="item-value">Effectué</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,24)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Ceintures</span><span class="item-value">Attachées</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,25)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Porte arrière</span><span class="item-value">Fermée / Verrouillée</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,26)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Verrière</span><span class="item-value">Fermée ou entr'ouverte</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,27)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Quantité carburant</span><span class="item-value">Vérifiée</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,28)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Température carburant</span><span class="item-value">Vérifiée</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,29)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Horamètre</span><span class="item-value">Relevé</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,30)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Manette de puissance</span><span class="item-value">Ralenti</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,31)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Feux à éclats</span><span class="item-value">Marche</span></div></div><div class="section"><div class="section-title">Procédure de mise en route</div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,32)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Engine Master</span><span class="item-value">ON</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,33)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Écran pannes / instruments moteur</span><span class="item-value">Vérifiés</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,34)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Affichage bougie préchauffage</span><span class="item-value">Éteint</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,35)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Champ hélice</span><span class="item-value">Dégagé</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,36)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Electric Master → START jusqu'à 500 tr/mn</span><span class="item-value">Démarrage</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,37)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Pression huile (&lt; 3 s)</span><span class="item-value">VERT</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,38)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Tension et charge</span><span class="item-value">Vérifiés</span></div><div class="item" onclick="toggle(&#39;mise_en_route&#39;,39)" role="checkbox" aria-checked="false"><div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"></polyline></svg></div><span class="item-label">Écran pannes / instruments moteur</span><span class="item-value">Acquitté / Vérifiés</span></div></div><p class="note">Ne remplace pas le Manuel de Vol · Aéroclub de la Haute-Saône · Éd. 01-15</p></div>
+<button class="reset-btn" onclick="resetPhase()">↺ Réinitialiser</button>
+
+<script>
+const PHASES=[
+  {id:"prevol_int",label:"Prévol int.",sections:[
+    {title:"Prévol intérieure",items:[
+      {l:"Doc avion",v:"Vérifiée"},
+      {l:"Cache pitot",v:"Retiré"},
+      {l:"Corps étrangers cabine",v:"Dégagée"},
+      {l:"Cdes libres — blocage gouvernes",v:"Vérifiés / Retiré"},
+      {l:"Breakers",v:"Enfoncés"},
+      {l:"Emergency Fuel",v:"NORMAL"},
+      {l:"Engine Master",v:"OFF"},
+      {l:"ECU Swap",v:"AUTO"},
+      {l:"Essential Bus",v:"OFF"},
+      {l:"Équipts avionique et électriques",v:"OFF"},
+      {l:"Electric Master",v:"ON"},
+      {l:"Qté et T° carburant",v:"Vérifiées"},
+      {l:"T° extérieure",v:"Notée"},
+      {l:"Éclairage extérieur",v:"ON"},
+      {l:"Réchauffage pitot",v:"ON"},
+      {l:"Avertisseur décrochage",v:"Vérifié"},
+      {l:"Réchauffage pitot",v:"Vérifié"},
+      {l:"Éclairage extérieur",v:"Vérifié"},
+      {l:"Electric Master",v:"OFF / Clé retirée"},
+    ]}
+  ]},
+  {id:"prevol_ext",label:"Prévol ext.",sections:[
+    {title:"Train gauche",items:[
+      {l:"Carénage roue gauche",v:"OK"},
+      {l:"Pneu gauche — 2.5 bars",v:"OK / Pas de glissement"},
+      {l:"Frein / canalisation / étrier gauche",v:"Pas de fuite"},
+    ]},
+    {title:"Aile gauche",items:[
+      {l:"Bord d'attaque, intrados, extrados, arêtes",v:"OK"},
+      {l:"Robinet purge — eau réservoir gauche",v:"Aucune"},
+      {l:"Avertisseur de décrochage",v:"OK"},
+      {l:"Mise à l'air libre réservoir gauche",v:"OK"},
+      {l:"Bouchon remplissage gauche",v:"Fermé verrouillé"},
+      {l:"Cache pitot — orifices libres",v:"Retiré"},
+      {l:"Phares carénage",v:"OK"},
+      {l:"Saumon / feux nav gauche",v:"OK"},
+      {l:"Déperditeurs statiques gauche",v:"OK"},
+      {l:"Aileron — débattement, charnières, bielle volet",v:"OK"},
+    ]},
+    {title:"Fuselage gauche",items:[
+      {l:"Verrière côté gauche",v:"OK"},
+      {l:"Porte arrière passagers gauche",v:"OK"},
+      {l:"Antennes",v:"OK"},
+    ]},
+    {title:"Queue",items:[
+      {l:"Profondeur et direction — liberté, charnières, goupilles",v:"OK"},
+      {l:"Compensateur — charnières, freinages",v:"OK"},
+      {l:"Quille (étambot) — patin protection",v:"OK"},
+      {l:"Déperditeurs statiques queue",v:"OK"},
+    ]},
+    {title:"Fuselage droit",items:[
+      {l:"Fuselage côté droit",v:"OK"},
+      {l:"Porte arrière passagers droit",v:"OK"},
+      {l:"Verrière côté droit",v:"OK"},
+    ]},
+    {title:"Aile droite",items:[
+      {l:"Volet droit",v:"OK"},
+      {l:"Aileron droit — débattement, charnières, bielle",v:"OK"},
+      {l:"Déperditeurs statiques droite",v:"OK"},
+      {l:"Saumon / feux nav droit",v:"OK"},
+      {l:"Bord d'attaque, intrados, extrados droit",v:"OK"},
+      {l:"Bouchon remplissage droit",v:"Fermé verrouillé"},
+      {l:"Mise à l'air libre réservoir droit",v:"OK"},
+      {l:"Robinet purge — eau réservoir droit",v:"Aucune"},
+      {l:"Cache radiateur carburant (si T° < 20°C)",v:"En place"},
+    ]},
+    {title:"Train droit",items:[
+      {l:"Pneu droit — 2.5 bars",v:"OK / Pas de glissement"},
+      {l:"Frein / canalisation / étrier droit",v:"Pas de fuite"},
+    ]},
+    {title:"Partie avant",items:[
+      {l:"Sonde T° extérieure",v:"OK"},
+      {l:"Hélice et cône",v:"OK"},
+      {l:"Capots / entrées d'air (×5)",v:"OK"},
+      {l:"Pneu train avant — 2.0 bars",v:"OK / Pas de glissement"},
+      {l:"Niveau huile moteur (4.5–6.0 l)",v:"OK"},
+      {l:"Niveau huile réducteur",v:"OK"},
+      {l:"Collecteur de purges",v:"OK"},
+      {l:"Filtre carb moteur — eau / impuretés",v:"Aucune"},
+    ]},
+  ]},
+  {id:"mise_en_route",label:"Mise en route",sections:[
+    {title:"Vérifications avant mise en route",items:[
+      {l:"Vérifications prévol",v:"Effectuées"},
+      {l:"Bagages et barre de remorquage",v:"Sangles"},
+      {l:"Vanne secours carburant",v:"Normal"},
+      {l:"Manette de puissance",v:"Ralenti"},
+      {l:"Frein de parc",v:"Tiré"},
+      {l:"Vanne Alternate Air",v:"Fermée"},
+      {l:"Breakers",v:"Enfoncés"},
+      {l:"Transfert carburant",v:"OFF"},
+      {l:"Avionic Master",v:"OFF"},
+      {l:"Essential Bus",v:"OFF"},
+      {l:"Electric Master",v:"OFF"},
+      {l:"Éclairages",v:"Coupés"},
+      {l:"Réchauffage Pitot",v:"Coupé"},
+      {l:"Vanne statique secours",v:"Fermée"},
+      {l:"ECU Swap",v:"Auto"},
+      {l:"Engine Master",v:"OFF"},
+      {l:"Éclairage instruments et casquette",v:"Coupé"},
+      {l:"Commande volets",v:"Rentrés"},
+      {l:"Electric Master",v:"ON"},
+      {l:"Écran affichage pannes + instruments moteur",v:"Vérifiés"},
+      {l:"Poussoir acquittement panne",v:"Enfoncé"},
+      {l:"Lampe bas niveau liquide refroidissement",v:"Éteinte"},
+      {l:"Palonniers",v:"Réglés"},
+      {l:"Briefing passagers",v:"Effectué"},
+      {l:"Ceintures",v:"Attachées"},
+      {l:"Porte arrière",v:"Fermée / Verrouillée"},
+      {l:"Verrière",v:"Fermée ou entr'ouverte"},
+      {l:"Quantité carburant",v:"Vérifiée"},
+      {l:"Température carburant",v:"Vérifiée"},
+      {l:"Horamètre",v:"Relevé"},
+      {l:"Manette de puissance",v:"Ralenti"},
+      {l:"Feux à éclats",v:"Marche"},
+    ]},
+    {title:"Procédure de mise en route",items:[
+      {l:"Engine Master",v:"ON"},
+      {l:"Écran pannes / instruments moteur",v:"Vérifiés"},
+      {l:"Affichage bougie préchauffage",v:"Éteint"},
+      {l:"Champ hélice",v:"Dégagé"},
+      {l:"Electric Master → START jusqu'à 500 tr/mn",v:"Démarrage"},
+      {l:"Pression huile (< 3 s)",v:"VERT"},
+      {l:"Tension et charge",v:"Vérifiés"},
+      {l:"Écran pannes / instruments moteur",v:"Acquitté / Vérifiés"},
+    ]},
+  ]},
+  {id:"apres_mer",label:"Après MER",sections:[
+    {title:"Vérifications après mise en route",items:[
+      {l:"Pression huile",v:"Vérifiée"},
+      {l:"Régime moteur 890 ±20 tr/mn",v:"Vérifié"},
+      {l:"Chauffage : ralenti 2 min puis 1400 tr/mn — OT>50°C CT>60°C",v:"OK"},
+      {l:"Réchauffage Pitot — écran pannes + ampèremètre",v:"Marche / Vérifié"},
+      {l:"Réchauffage Pitot",v:"Coupé"},
+      {l:"Avionic Master",v:"ON"},
+      {l:"GPS / NAV",v:"Marche"},
+      {l:"Éclairage casquette",v:"À la demande"},
+      {l:"Feux de position",v:"Marche"},
+      {l:"Volets — test plein débattement puis T/O",v:"T/O"},
+      {l:"Altimètre",v:"Recalé"},
+      {l:"Transpondeur",v:"Marche / Testé / STBY"},
+      {l:"Frein de parc",v:"Relâché"},
+    ]},
+    {title:"Pendant le roulage",items:[
+      {l:"Freins",v:"Testés"},
+      {l:"Instruments VSV",v:"Vérifiés"},
+    ]},
+  ]},
+  {id:"avt_decol",label:"Avant décol.",sections:[
+    {title:"Vérifications avant décollage",items:[
+      {l:"Frein de parc",v:"Serré"},
+      {l:"Ceintures",v:"Attachées"},
+      {l:"Porte arrière",v:"Fermée / Verrouillée"},
+      {l:"Verrière",v:"Fermée / Verrouillée"},
+      {l:"Lampes verrières",v:"Éteintes"},
+      {l:"Instruments moteur",v:"Verts"},
+      {l:"T° carburant (gas oil min +5°C)",v:"Vérifiée"},
+      {l:"Breakers",v:"Enclenchés"},
+      {l:"Compensateur de profondeur",v:"Vérifié / Réglé D/L"},
+      {l:"Volets",v:"T/O"},
+      {l:"Commandes de vol",v:"Testées"},
+      {l:"Manette de puissance",v:"Ralenti"},
+    ]},
+    {title:"Essais moteur — ECU Test",items:[
+      {l:"Poussoir test calculateur — maintenu enfoncé",v:"Pressé"},
+      {l:"Lampes alarme ECU A et B",v:"Clignotantes"},
+      {l:"Lampe alarme ECU B — régulation hélice",v:"OK"},
+      {l:"Lampe alarme ECU A — régulation hélice",v:"OK"},
+      {l:"Lampes alarme ECU A et B",v:"Éteintes"},
+      {l:"Poussoir test calculateur",v:"Relâché"},
+      {l:"ECU Swap — vérifier passage ECU B",v:"Marche"},
+      {l:"ECU Swap",v:"Auto"},
+      {l:"Réchauffage Pitot",v:"À la demande"},
+      {l:"Transpondeur",v:"Mode et code affichés"},
+      {l:"Frein de parc",v:"Desserré"},
+    ]},
+    {title:"Alignement",items:[
+      {l:"Phare d'atterrissage",v:"Marche"},
+      {l:"Secteur approche",v:"Dégagé"},
+      {l:"Piste",v:"Dégagée"},
+      {l:"Manette de puissance — plein gaz 10 s",v:"100%"},
+      {l:"Paramètres moteur — tours, charge, P huile, débitmètre",v:"Vérifiés"},
+    ]},
+  ]},
+  {id:"vol",label:"En vol",sections:[
+    {title:"Après décollage — hauteur de sécurité",items:[
+      {l:"Volets",v:"Rentrés"},
+      {l:"Phare",v:"Coupé"},
+    ]},
+    {title:"Montée croisière",items:[
+      {l:"Volets",v:"Rentrés"},
+      {l:"Phare",v:"Coupé"},
+    ]},
+    {title:"Vérifications périodiques en croisière",items:[
+      {l:"Carburant",v:"Vérifié"},
+      {l:"Transfert",v:"Vérifié"},
+      {l:"Moteur",v:"Vérifié"},
+      {l:"Altitude",v:"Vérifiée"},
+    ]},
+    {title:"Descente / Approche",items:[
+      {l:"Paramètres atterrissage",v:"Notés"},
+      {l:"Altimètre",v:"Recalé"},
+      {l:"COM / NAV / GPS",v:"Adaptés"},
+      {l:"Ceintures",v:"Serrées"},
+      {l:"Transfert carb",v:"À la demande"},
+    ]},
+    {title:"Avant atterrissage — vent arrière / base",items:[
+      {l:"Volets",v:"T/O"},
+      {l:"Phare",v:"Branché"},
+    ]},
+    {title:"Finale",items:[
+      {l:"Volets",v:"LDG"},
+    ]},
+    {title:"Remise de gaz",items:[
+      {l:"Puissance",v:"Pleine charge"},
+      {l:"Volets",v:"T/O"},
+    ]},
+  ]},
+  {id:"apres_attrx",label:"Après attrx",sections:[
+    {title:"Après atterrissage",items:[
+      {l:"Volets",v:"Rentrés"},
+      {l:"Réchauffage Pitot",v:"Coupé"},
+      {l:"Alternate Air",v:"Fermé"},
+      {l:"Phare ATR / Roulage",v:"À la demande"},
+      {l:"Transpondeur",v:"Coupé"},
+    ]},
+    {title:"Au parking",items:[
+      {l:"Frein de parking",v:"Serré"},
+      {l:"Manette de puissance — plein réduit 2 min",v:"Ralenti"},
+      {l:"Balise détresse",v:"121.5 MHz vérifiée"},
+      {l:"Horamètre",v:"Relevé"},
+      {l:"Avionic Master",v:"Coupé"},
+      {l:"Équipements électriques (sauf Strobe)",v:"Coupés"},
+      {l:"Engine Master",v:"Coupé"},
+      {l:"Strobe",v:"Coupé"},
+      {l:"Electric Master",v:"Coupé"},
+      {l:"Éclairage intérieur",v:"Coupé"},
+      {l:"Clé de démarrage",v:"Retirée"},
+    ]},
+  ]},
+  {id:"vitesses",label:"Vitesses",vitesses:true,sections:[]}
+];
+
+let currentPhase=0;
+let checks={};
+
+function sk(pid,idx){return'da40_'+pid+'_'+idx}
+function loadChecks(){
+  checks={};
+  PHASES.forEach(p=>{
+    let i=0;
+    p.sections.forEach(s=>s.items.forEach(()=>{
+      const k=sk(p.id,i++);
+      try{checks[k]=localStorage.getItem(k)==='1';}catch(e){checks[k]=false;}
+    }));
+  });
+}
+function save(pid,idx,val){
+  const k=sk(pid,idx);
+  checks[k]=val;
+  try{localStorage.setItem(k,val?'1':'0');}catch(e){}
+}
+function phaseStats(pi){
+  const p=PHASES[pi];
+  if(p.vitesses)return{done:0,total:0};
+  let done=0,total=0,i=0;
+  p.sections.forEach(s=>s.items.forEach(()=>{total++;if(checks[sk(p.id,i++)])done++;}));
+  return{done,total};
+}
+function globalProgress(){
+  let done=0,total=0;
+  PHASES.forEach((_,i)=>{const s=phaseStats(i);done+=s.done;total+=s.total;});
+  return{done,total};
+}
+function updateProgress(){
+  const g=globalProgress();
+  const pct=g.total>0?Math.round(g.done/g.total*100):0;
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('ptext').textContent=g.done+' / '+g.total+' cochés ('+pct+'%)';
+}
+function renderTabs(){
+  const el=document.getElementById('tabs');
+  el.innerHTML=PHASES.map((p,i)=>{
+    const s=phaseStats(i);
+    const done=s.total>0&&s.done===s.total;
+    const cls=i===currentPhase?'tab active':done?'tab done':'tab';
+    return'<div class="'+cls+'" onclick="switchPhase('+i+')" role="tab">'+p.label+(done?' ✓':'')+'</div>';
+  }).join('');
+}
+function renderContent(){
+  const p=PHASES[currentPhase];
+  const el=document.getElementById('content');
+  if(p.vitesses){
+    el.innerHTML=`
+<div class="section">
+  <div class="section-title">Vitesses d'utilisation — nœuds (kts)</div>
+  <div class="vitesses-wrap">
+  <table class="vitesses-table">
+    <tr><th>Paramètre</th><th>850 kg</th><th>1000 kg</th><th>1150 kg</th></tr>
+    <tr><td>Meilleur angle de plané (volets rentrés)</td><td class="highlight">60</td><td class="highlight">68</td><td class="highlight">73</td></tr>
+    <tr><td>Vx — pente max (volets sortis)</td><td colspan="3" style="text-align:center;font-weight:600">66</td></tr>
+    <tr><td>Vy — Vz max</td><td class="highlight">54</td><td class="highlight">60</td><td class="highlight">66</td></tr>
+    <tr><td>Montée croisière (volets rentrés)</td><td class="highlight">60</td><td class="highlight">68</td><td class="highlight">73</td></tr>
+    <tr><td>Rotation</td><td class="highlight">49</td><td class="highlight">55</td><td class="highlight">59</td></tr>
+    <tr><td>Vi max volets T/O — VFE</td><td colspan="3" style="text-align:center;font-weight:600">108</td></tr>
+    <tr><td>Vi max volets ATR — VFE</td><td colspan="3" style="text-align:center;font-weight:600">91</td></tr>
+    <tr><td>Atterrissage volets rentrés</td><td class="highlight">60</td><td class="highlight">68</td><td class="highlight">73</td></tr>
+    <tr><td>Atterrissage volets ATR</td><td class="highlight">58</td><td class="highlight">63</td><td class="highlight">71</td></tr>
+    <tr><td>Décrochage Vs0 (volets ATR)</td><td colspan="3" style="text-align:center">42 → 49</td></tr>
+    <tr><td>Décrochage Vs1 (volets T/O)</td><td colspan="3" style="text-align:center">44 → 51</td></tr>
+    <tr><td>Décrochage Vs1 (volets rentrés)</td><td colspan="3" style="text-align:center">47 → 52</td></tr>
+    <tr><td>Croisière maxi — VNO</td><td colspan="3" style="text-align:center;font-weight:600;color:#1a2a4a">129</td></tr>
+    <tr><td>VNE — à ne jamais dépasser</td><td colspan="3" style="text-align:center;font-weight:600;color:#c0392b">178</td></tr>
+    <tr><td>Vitesse de manœuvre VA</td><td colspan="3" style="text-align:center">94 → 108</td></tr>
+  </table>
+  </div>
+  <div class="mass-info">Masse à vide : 767.4 kg · MTOW D/L et ATR : 1150 kg · Bagages maxi : 30 kg<br>Décrochages : valeur gauche ≤980 kg → valeur droite</div>
+</div>
+<p class="note">Ne remplace pas le Manuel de Vol · Aéroclub de la Haute-Saône · Éd. 01-15</p>`;
+    return;
+  }
+  let globalIdx=0;
+  let html='';
+  p.sections.forEach(s=>{
+    html+='<div class="section"><div class="section-title">'+s.title+'</div>';
+    s.items.forEach(item=>{
+      const k=sk(p.id,globalIdx);
+      const chk=checks[k];
+      html+='<div class="item'+(chk?' checked':'')+'" onclick="toggle(\''+p.id+'\','+globalIdx+')" role="checkbox" aria-checked="'+(chk?'true':'false')+'">'
+        +'<div class="check-circle"><svg class="check-icon" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,7 5,10.5 11.5,2.5"/></svg></div>'
+        +'<span class="item-label">'+item.l+'</span>'
+        +'<span class="item-value">'+item.v+'</span>'
+        +'</div>';
+      globalIdx++;
+    });
+    html+='</div>';
+  });
+  html+='<p class="note">Ne remplace pas le Manuel de Vol · Aéroclub de la Haute-Saône · Éd. 01-15</p>';
+  el.innerHTML=html;
+}
+function toggle(pid,idx){
+  const k=sk(pid,idx);
+  const newVal=!checks[k];
+  save(pid,idx,newVal);
+  const items=document.querySelectorAll('.item');
+  let counter=0;
+  let found=false;
+  PHASES[currentPhase].sections.forEach(s=>{
+    s.items.forEach(()=>{
+      if(counter===idx&&!found){
+        found=true;
+        const el=items[counter];
+        el.classList.toggle('checked',newVal);
+        el.setAttribute('aria-checked',newVal?'true':'false');
+      }
+      counter++;
+    });
+  });
+  updateProgress();
+  renderTabs();
+}
+function switchPhase(i){
+  currentPhase=i;
+  renderTabs();
+  renderContent();
+  window.scrollTo(0,0);
+}
+function resetPhase(){
+  const p=PHASES[currentPhase];
+  if(p.vitesses)return;
+  if(!confirm('Réinitialiser cette phase ?'))return;
+  let i=0;
+  p.sections.forEach(s=>s.items.forEach(()=>save(p.id,i++,false)));
+  renderContent();
+  renderTabs();
+  updateProgress();
+}
+loadChecks();
+renderTabs();
+renderContent();
+updateProgress();
+</script>
+
+
+</body></html>
