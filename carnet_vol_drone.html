@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carnet de vol drone — Arnaud MOREAU</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f3;
+    --bg3: #eeede9;
+    --text: #1a1a18;
+    --text2: #6b6b67;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --teal-bg: #E1F5EE;
+    --teal-text: #0F6E56;
+    --teal-border: #1D9E75;
+    --coral-bg: #FAECE7;
+    --coral-text: #993C1D;
+    --coral-border: #D85A30;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c;
+      --bg2: #2a2a28;
+      --bg3: #333331;
+      --text: #f0efea;
+      --text2: #9b9b95;
+      --border: rgba(255,255,255,0.10);
+      --border2: rgba(255,255,255,0.20);
+      --teal-bg: #04342C;
+      --teal-text: #9FE1CB;
+      --teal-border: #1D9E75;
+      --coral-bg: #4A1B0C;
+      --coral-text: #F5C4B3;
+      --coral-border: #D85A30;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg3);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 1.5rem;
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+  @media (max-width: 600px) {
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.02em;
+  }
+
+  input, select, textarea {
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--border2);
+  }
+
+  textarea { resize: vertical; min-height: 68px; }
+
+  .duration-badge {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+  }
+
+  .duration-badge i { color: var(--text2); font-size: 16px; }
+
+  .incident-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 8px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg2);
+    color: var(--text2);
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .toggle-btn.active-no {
+    border-color: var(--teal-border);
+    background: var(--teal-bg);
+    color: var(--teal-text);
+  }
+
+  .toggle-btn.active-yes {
+    border-color: var(--coral-border);
+    background: var(--coral-bg);
+    color: var(--coral-text);
+  }
+
+  .incident-box {
+    display: none;
+    margin-bottom: 14px;
+  }
+
+  .btn-add {
+    width: 100%;
+    padding: 11px;
+    background: var(--text);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--bg);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.15s;
+    margin-top: 4px;
+  }
+
+  .btn-add:hover { opacity: 0.85; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 600px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  .stat-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+  }
+
+  .stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 500; color: var(--text); }
+
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  thead th {
+    background: var(--bg2);
+    color: var(--text2);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 9px 12px;
+    text-align: left;
+    border-bottom: 0.5px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr { border-bottom: 0.5px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg2); }
+  td { padding: 9px 12px; color: var(--text); vertical-align: middle; white-space: nowrap; }
+
+  td.notes-cell {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text2);
+    font-style: italic;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .badge-ok { background: var(--teal-bg); color: var(--teal-text); }
+  .badge-incident { background: var(--coral-bg); color: var(--coral-text); }
+
+  .del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 16px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .del-btn:hover { color: var(--coral-text); background: var(--coral-bg); }
+
+  .btn-export {
+    width: 100%;
+    padding: 11px;
+    background: var(--bg);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s;
+  }
+
+  .btn-export:hover:not(:disabled) { background: var(--bg2); }
+  .btn-export:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--text2);
+    font-size: 14px;
+  }
+
+  .empty-state i { font-size: 36px; display: block; margin-bottom: 10px; opacity: 0.35; }
+
+  .msg-success {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--teal-text);
+    background: var(--teal-bg);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1><i class="ti ti-plane" style="font-size:22px"></i> Carnet de vol drone</h1>
+    <p>Arnaud MOREAU — données stockées en session, export .xlsx</p>
+  </header>
+
+  <!-- Formulaire -->
+  <div class="card">
+    <p class="section-title"><i class="ti ti-plus"></i> Nouveau vol</p>
+
+    <div class="grid2">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="field">
+        <label>Drone</label>
+        <select id="f-drone">
+          <option value="">— Choisir —</option>
+          <option>Mini 4 Pro</option>
+          <option>Mavic 3 Multispectral</option>
+          <option>Mavic 4</option>
+          <option>DJI Néo</option>
+          <option>Agras T50</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="field">
+        <label>Heure décollage</label>
+        <input type="time" id="f-hdec">
+      </div>
+      <div class="field">
+        <label>Heure atterrissage</label>
+        <input type="time" id="f-hatt">
+      </div>
+      <div class="field">
+        <label>Durée</label>
+        <div class="duration-badge"><i class="ti ti-clock"></i><span id="f-duree">—</span></div>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="field">
+        <label>Nb atterrissages</label>
+        <input type="number" id="f-att" min="1" value="1">
+      </div>
+      <div class="field">
+        <label>Catégorie</label>
+        <select id="f-cat">
+          <option value="">— Choisir —</option>
+          <option>Open A1/A3</option>
+          <option>Open A2</option>
+          <option>STS-01</option>
+          <option>Spécifique</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Mission</label>
+        <select id="f-mission">
+          <option value="">— Choisir —</option>
+          <option>Inspection</option>
+          <option>Agriculture</option>
+          <option>SDIS</option>
+          <option>Formation</option>
+          <option>Relevé</option>
+          <option>Autre</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>Lieu</label>
+      <input type="text" id="f-lieu" placeholder="Commune, lieu-dit…">
+    </div>
+
+    <div class="field" style="margin-bottom:10px">
+      <label>Incident / anomalie</label>
+    </div>
+    <div class="incident-toggle">
+      <button class="toggle-btn active-no" id="btn-no" onclick="setIncident(false)">
+        <i class="ti ti-check"></i> Aucun
+      </button>
+      <button class="toggle-btn" id="btn-yes" onclick="setIncident(true)">
+        <i class="ti ti-alert-triangle"></i> Incident
+      </button>
+    </div>
+
+    <div class="incident-box field" id="incident-detail">
+      <label>Description de l'incident</label>
+      <textarea id="f-incident" placeholder="Décrire l'incident ou l'anomalie…"></textarea>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>Notes libres</label>
+      <textarea id="f-notes" placeholder="Observations, contexte, client…"></textarea>
+    </div>
+
+    <div class="msg-success" id="msg-ok">
+      <i class="ti ti-circle-check"></i> Vol enregistré avec succès
+    </div>
+
+    <button class="btn-add" onclick="addFlight()">
+      <i class="ti ti-plane-departure"></i> Enregistrer le vol
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="stats-row" style="display:none">
+    <div class="stat-card"><div class="stat-label">Vols enregistrés</div><div class="stat-val" id="s-vols">0</div></div>
+    <div class="stat-card"><div class="stat-label">Durée totale</div><div class="stat-val" id="s-duree">0 h</div></div>
+    <div class="stat-card"><div class="stat-label">Atterrissages</div><div class="stat-val" id="s-att">0</div></div>
+    <div class="stat-card"><div class="stat-label">Incidents</div><div class="stat-val" id="s-inc">0</div></div>
+  </div>
+
+  <!-- Tableau -->
+  <div id="table-section" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Drone</th>
+            <th>Décollage</th>
+            <th>Atterrissage</th>
+            <th>Durée</th>
+            <th>Att.</th>
+            <th>Catégorie</th>
+            <th>Mission</th>
+            <th>Lieu</th>
+            <th>Incident</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="flight-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="empty-state" class="card empty-state">
+    <i class="ti ti-plane"></i>
+    Aucun vol enregistré — ajoutez votre premier vol ci-dessus
+  </div>
+
+  <!-- Export -->
+  <button class="btn-export" id="btn-export" onclick="exportXLSX()" disabled>
+    <i class="ti ti-download"></i> Exporter en Excel (.xlsx)
+  </button>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+let flights = [];
+let hasIncident = false;
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('f-date').value = today;
+
+document.getElementById('f-hdec').addEventListener('input', calcDuree);
+document.getElementById('f-hatt').addEventListener('input', calcDuree);
+
+function calcDuree() {
+  const dec = document.getElementById('f-hdec').value;
+  const att = document.getElementById('f-hatt').value;
+  if (!dec || !att) { document.getElementById('f-duree').textContent = '—'; return 0; }
+  const [dh, dm] = dec.split(':').map(Number);
+  const [ah, am] = att.split(':').map(Number);
+  let mins = (ah * 60 + am) - (dh * 60 + dm);
+  if (mins < 0) mins += 1440;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  document.getElementById('f-duree').textContent = h > 0 ? `${h}h${String(m).padStart(2,'0')}` : `${m} min`;
+  return mins;
+}
+
+function setIncident(val) {
+  hasIncident = val;
+  document.getElementById('btn-no').className = 'toggle-btn' + (val ? '' : ' active-no');
+  document.getElementById('btn-yes').className = 'toggle-btn' + (val ? ' active-yes' : '');
+  document.getElementById('incident-detail').style.display = val ? 'block' : 'none';
+}
+
+function addFlight() {
+  const date     = document.getElementById('f-date').value;
+  const drone    = document.getElementById('f-drone').value;
+  const hdec     = document.getElementById('f-hdec').value;
+  const hatt     = document.getElementById('f-hatt').value;
+  const cat      = document.getElementById('f-cat').value;
+  const mission  = document.getElementById('f-mission').value;
+
+  if (!date || !drone || !hdec || !hatt || !cat || !mission) {
+    alert('Veuillez remplir au minimum : date, drone, heures, catégorie et mission.');
+    return;
+  }
+
+  const mins = calcDuree();
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const dureeStr = h > 0 ? `${h}h${String(m).padStart(2,'0')}` : `${m} min`;
+
+  flights.push({
+    date,
+    drone,
+    hdec,
+    hatt,
+    duree: dureeStr,
+    dureeMins: mins,
+    nbAtt: parseInt(document.getElementById('f-att').value) || 1,
+    cat,
+    mission,
+    lieu: document.getElementById('f-lieu').value.trim(),
+    incident: hasIncident,
+    incidentDetail: hasIncident ? document.getElementById('f-incident').value.trim() : '',
+    notes: document.getElementById('f-notes').value.trim()
+  });
+
+  renderTable();
+  updateStats();
+  resetForm();
+  showMsg();
+}
+
+function showMsg() {
+  const msg = document.getElementById('msg-ok');
+  msg.style.display = 'flex';
+  setTimeout(() => { msg.style.display = 'none'; }, 2500);
+}
+
+function renderTable() {
+  const tbody = document.getElementById('flight-tbody');
+  tbody.innerHTML = '';
+  flights.forEach((f, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${formatDate(f.date)}</td>
+      <td>${f.drone}</td>
+      <td>${f.hdec}</td>
+      <td>${f.hatt}</td>
+      <td>${f.duree}</td>
+      <td style="text-align:center">${f.nbAtt}</td>
+      <td>${f.cat}</td>
+      <td>${f.mission}</td>
+      <td>${f.lieu || '—'}</td>
+      <td><span class="badge ${f.incident ? 'badge-incident' : 'badge-ok'}">${f.incident ? '⚠ Oui' : '✓ Non'}</span></td>
+      <td class="notes-cell" title="${esc(f.incidentDetail ? '⚠ ' + f.incidentDetail + (f.notes ? ' | ' + f.notes : '') : f.notes)}">${f.incidentDetail ? '⚠ ' + f.incidentDetail : (f.notes || '—')}</td>
+      <td><button class="del-btn" onclick="deleteFlight(${i})" title="Supprimer ce vol"><i class="ti ti-trash"></i></button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  const hasFlights = flights.length > 0;
+  document.getElementById('table-section').style.display  = hasFlights ? 'block' : 'none';
+  document.getElementById('empty-state').style.display    = hasFlights ? 'none'  : 'block';
+  document.getElementById('stats-row').style.display      = hasFlights ? 'grid'  : 'none';
+  document.getElementById('btn-export').disabled          = !hasFlights;
+}
+
+function deleteFlight(i) {
+  if (!confirm('Supprimer ce vol ?')) return;
+  flights.splice(i, 1);
+  renderTable();
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('s-vols').textContent = flights.length;
+  const totalMins = flights.reduce((a, f) => a + f.dureeMins, 0);
+  const th = Math.floor(totalMins / 60);
+  const tm = totalMins % 60;
+  document.getElementById('s-duree').textContent = th > 0 ? `${th}h${String(tm).padStart(2,'0')}` : `${tm} min`;
+  document.getElementById('s-att').textContent = flights.reduce((a, f) => a + f.nbAtt, 0);
+  document.getElementById('s-inc').textContent = flights.filter(f => f.incident).length;
+}
+
+function resetForm() {
+  document.getElementById('f-date').value    = today;
+  document.getElementById('f-drone').value   = '';
+  document.getElementById('f-hdec').value    = '';
+  document.getElementById('f-hatt').value    = '';
+  document.getElementById('f-duree').textContent = '—';
+  document.getElementById('f-att').value     = 1;
+  document.getElementById('f-cat').value     = '';
+  document.getElementById('f-mission').value = '';
+  document.getElementById('f-lieu').value    = '';
+  document.getElementById('f-notes').value   = '';
+  document.getElementById('f-incident').value = '';
+  setIncident(false);
+}
+
+function formatDate(d) {
+  const [y, m, j] = d.split('-');
+  return `${j}/${m}/${y}`;
+}
+
+function esc(s) {
+  return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function exportXLSX() {
+  const exportDate = new Date().toLocaleDateString('fr-FR');
+  const totalMins  = flights.reduce((a, f) => a + f.dureeMins, 0);
+  const th = Math.floor(totalMins / 60);
+  const tm = totalMins % 60;
+  const totalDuree = th > 0 ? `${th}h${String(tm).padStart(2,'0')}` : `${tm} min`;
+  const totalAtt   = flights.reduce((a, f) => a + f.nbAtt, 0);
+  const totalInc   = flights.filter(f => f.incident).length;
+
+  const header = [
+    'Date', 'Drone', 'Heure décollage', 'Heure atterrissage',
+    'Durée', 'Nb atterrissages', 'Catégorie', 'Mission',
+    'Lieu', 'Incident', 'Détail incident', 'Notes'
+  ];
+
+  const rows = flights.map(f => [
+    formatDate(f.date), f.drone, f.hdec, f.hatt,
+    f.duree, f.nbAtt, f.cat, f.mission,
+    f.lieu, f.incident ? 'Oui' : 'Non', f.incidentDetail, f.notes
+  ]);
+
+  const wsData = [
+    ['CARNET DE VOL DRONE'],
+    ['Arnaud MOREAU'],
+    [`Exporté le ${exportDate} — ${flights.length} vol(s) — Durée totale : ${totalDuree} — Atterrissages : ${totalAtt} — Incidents : ${totalInc}`],
+    [],
+    header,
+    ...rows,
+    [],
+    ['TOTAUX', '', '', '', totalDuree, totalAtt, '', '', '', totalInc, '', '']
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  ws['!merges'] = [
+    { s:{r:0,c:0}, e:{r:0,c:11} },
+    { s:{r:1,c:0}, e:{r:1,c:11} },
+    { s:{r:2,c:0}, e:{r:2,c:11} }
+  ];
+
+  ws['!cols'] = [
+    {wch:12},{wch:22},{wch:16},{wch:18},
+    {wch:10},{wch:16},{wch:14},{wch:14},
+    {wch:24},{wch:10},{wch:30},{wch:32}
+  ];
+
+  XLSX.utils.book_append_sheet(XLSX.utils.book_new(), ws, 'Carnet de vol');
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Carnet de vol');
+
+  const fname = `carnet_vol_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, fname);
+}
+
+renderTable();
+</script>
+</body>
+</html>
