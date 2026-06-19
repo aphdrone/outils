@@ -1,0 +1,2425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APH Drone — Checklist Météo DGAC</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090d;
+  --surface: #0e1219;
+  --surface2: #141921;
+  --surface3: #1a2133;
+  --border: #1e2d45;
+  --border2: #243550;
+  --accent: #3b82f6;
+  --accent-dim: rgba(59,130,246,0.15);
+  --accent-glow: rgba(59,130,246,0.3);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.15);
+  --orange: #f59e0b;
+  --orange-dim: rgba(245,158,11,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.15);
+  --text: #e2e8f0;
+  --text-dim: #64748b;
+  --text-mid: #94a3b8;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* LAYOUT */
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.logo-block {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.logo-sub {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 3px;
+  font-family: var(--mono);
+}
+
+/* PROGRESS RING */
+.progress-block {
+  padding: 20px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ring-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.ring-wrap svg {
+  transform: rotate(-90deg);
+}
+
+.ring-wrap .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+.ring-wrap .ring-fill {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 163;
+  stroke-dashoffset: 163;
+  transition: stroke-dashoffset 0.5s ease, stroke 0.3s;
+}
+
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.progress-info { flex: 1; }
+.progress-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+.progress-count { font-size: 22px; font-weight: 700; color: var(--text); margin-top: 2px; font-family: var(--mono); }
+.progress-total { font-size: 11px; color: var(--text-dim); }
+
+/* GONOGO */
+.gonogo-block {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.gonogo-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+
+.gonogo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.gonogo-badge.pending {
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  color: var(--text-dim);
+}
+
+.gonogo-badge.go {
+  background: var(--green-dim);
+  border: 1px solid var(--green);
+  color: var(--green);
+  box-shadow: 0 0 20px rgba(16,185,129,0.2);
+}
+
+.gonogo-badge.nogo {
+  background: var(--red-dim);
+  border: 1px solid var(--red);
+  color: var(--red);
+  box-shadow: 0 0 20px rgba(239,68,68,0.2);
+}
+
+.gonogo-badge.caution {
+  background: var(--orange-dim);
+  border: 1px solid var(--orange);
+  color: var(--orange);
+  box-shadow: 0 0 20px rgba(245,158,11,0.2);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* NAV SECTIONS */
+.nav-sections {
+  padding: 14px 0;
+  flex: 1;
+}
+
+.nav-title {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0 18px;
+  margin-bottom: 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+
+.nav-item:hover { background: var(--surface2); }
+.nav-item.active {
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+}
+
+.nav-icon {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+
+.nav-text { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-mid); }
+.nav-item.active .nav-text { color: var(--text); }
+
+.nav-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--surface3);
+  color: var(--text-dim);
+}
+
+.nav-badge.done {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.nav-badge.partial {
+  background: var(--orange-dim);
+  color: var(--orange);
+}
+
+/* SIDEBAR ACTIONS */
+.sidebar-actions {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: #2563eb; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-mid);
+  border: 1px solid var(--border2);
+}
+.btn-outline:hover { background: var(--surface2); color: var(--text); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--red);
+  border: 1px solid rgba(239,68,68,0.3);
+  font-size: 11px;
+}
+.btn-danger:hover { background: var(--red-dim); }
+
+/* MAIN CONTENT */
+.main {
+  overflow-y: auto;
+  height: 100vh;
+}
+
+/* HEADER */
+.main-header {
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mission-fields {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.field-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--mono);
+}
+
+.field-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 10px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  min-width: 120px;
+  transition: border-color 0.2s;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* PANELS */
+.panel {
+  display: none;
+  padding: 24px 28px;
+}
+
+.panel.active { display: block; }
+
+.panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.panel-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+
+/* SECTION CARD */
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.section-header:hover { background: var(--surface2); }
+
+.section-icon {
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--surface3);
+  flex-shrink: 0;
+}
+
+.section-info { flex: 1; }
+.section-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.section-ref {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+
+.section-counter {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--surface3);
+  color: var(--text-dim);
+}
+
+.section-counter.all-done {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.section-chevron {
+  color: var(--text-dim);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.section-card.open .section-chevron { transform: rotate(180deg); }
+
+.section-body {
+  display: none;
+  border-top: 1px solid var(--border);
+}
+
+.section-card.open .section-body { display: block; }
+
+/* CHECKLIST ITEMS */
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: var(--surface2); }
+.check-item.checked { opacity: 0.6; }
+
+.check-box {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--border2);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background: transparent;
+}
+
+.check-item.checked .check-box {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.check-box::after {
+  content: '✓';
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: none;
+}
+
+.check-item.checked .check-box::after { display: block; }
+
+.check-content { flex: 1; }
+.check-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.check-item.checked .check-text {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
+.check-detail {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+.check-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.tag-critical { background: var(--red-dim); color: var(--red); }
+.tag-warning { background: var(--orange-dim); color: var(--orange); }
+.tag-info { background: var(--accent-dim); color: var(--accent); }
+.tag-reg { background: rgba(139,92,246,0.15); color: #a78bfa; }
+
+/* CRITICAL ITEM highlight */
+.check-item.critical {
+  border-left: 2px solid var(--red);
+}
+
+/* WIND ROSE */
+.wind-module {
+  padding: 18px;
+  background: var(--surface2);
+  border-radius: 8px;
+  margin: 14px 18px;
+}
+
+.module-title {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+  font-family: var(--mono);
+}
+
+.wind-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.rose-wrap {
+  position: relative;
+  width: 110px;
+  height: 110px;
+}
+
+.rose-wrap canvas {
+  border-radius: 50%;
+}
+
+.wind-controls { display: flex; flex-direction: column; gap: 12px; }
+
+.control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.control-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+.control-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface3);
+  outline: none;
+}
+
+.control-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.wind-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wind-value span { font-size: 11px; color: var(--text-dim); font-weight: 400; }
+
+.wind-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+/* WINDY PANEL */
+.windy-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.windy-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.windy-logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #00bfff;
+}
+
+.windy-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.windy-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.windy-tab {
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  font-family: var(--mono);
+}
+
+.windy-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.windy-tab:hover:not(.active) { color: var(--text); }
+
+.windy-iframe-wrap {
+  height: 480px;
+  position: relative;
+}
+
+.windy-iframe-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.windy-iframe-wrap.hidden { display: none; }
+
+.windy-link-block {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.windy-link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.15s;
+}
+
+.windy-link-item:hover {
+  background: var(--surface3);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.windy-link-icon { font-size: 20px; }
+.windy-link-info { flex: 1; }
+.windy-link-name { font-size: 13px; font-weight: 600; }
+.windy-link-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.windy-link-arrow { color: var(--text-dim); font-size: 14px; }
+
+/* LOCATION INPUT */
+.location-bar {
+  display: flex;
+  gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  align-items: center;
+}
+
+.loc-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+.loc-input {
+  flex: 1;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 10px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+}
+
+.loc-input:focus { outline: none; border-color: var(--accent); }
+
+.loc-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.loc-btn:hover { background: #2563eb; }
+
+/* SYNTHESE */
+.synth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.synth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.synth-card-title {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+}
+
+.synth-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--mono);
+}
+
+.synth-card-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+.synth-card.green .synth-card-value { color: var(--green); }
+.synth-card.orange .synth-card-value { color: var(--orange); }
+.synth-card.red .synth-card-value { color: var(--red); }
+.synth-card.blue .synth-card-value { color: var(--accent); }
+
+/* DECISION BLOCK */
+.decision-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.decision-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.decision-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.decision-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--mono);
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
+}
+
+.decision-btn.go-btn {
+  background: var(--green-dim);
+  border-color: var(--border2);
+  color: var(--text-mid);
+}
+.decision-btn.go-btn.selected,
+.decision-btn.go-btn:hover {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 20px rgba(16,185,129,0.2);
+}
+
+.decision-btn.caution-btn {
+  background: var(--orange-dim);
+  border-color: var(--border2);
+  color: var(--text-mid);
+}
+.decision-btn.caution-btn.selected,
+.decision-btn.caution-btn:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.decision-btn.nogo-btn {
+  background: var(--red-dim);
+  border-color: var(--border2);
+  color: var(--text-mid);
+}
+.decision-btn.nogo-btn.selected,
+.decision-btn.nogo-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* SIGNATURE */
+.sig-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sig-field {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.sig-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+}
+
+.sig-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border2);
+  padding: 6px 0;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+}
+
+.sig-input:focus { outline: none; border-bottom-color: var(--accent); }
+
+/* TEXTAREA */
+.obs-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 80px;
+  margin-top: 8px;
+}
+
+.obs-textarea:focus { outline: none; border-color: var(--accent); }
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 24px;
+  width: 420px;
+  max-width: 90vw;
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.modal-field {
+  margin-bottom: 14px;
+}
+
+.modal-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 5px;
+  font-family: var(--mono);
+}
+
+.modal-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.modal-input:focus { outline: none; border-color: var(--accent); }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-note {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: relative; height: auto; }
+  .main { height: auto; }
+  .synth-grid { grid-template-columns: 1fr; }
+  .sig-grid { grid-template-columns: 1fr; }
+  .wind-layout { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-block">
+      <div class="logo-title">APH DRONE</div>
+      <div class="logo-sub">CHECKLIST MÉTÉO // DGAC EU 2019/947</div>
+    </div>
+
+    <div class="progress-block">
+      <div class="ring-wrap">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle class="ring-bg" cx="32" cy="32" r="26"/>
+          <circle class="ring-fill" id="ringFill" cx="32" cy="32" r="26"/>
+        </svg>
+        <div class="ring-center" id="ringPct">0%</div>
+      </div>
+      <div class="progress-info">
+        <div class="progress-label">Avancement</div>
+        <div class="progress-count"><span id="checkedCount">0</span></div>
+        <div class="progress-total" id="progressTotal">/ 0 points vérifiés</div>
+      </div>
+    </div>
+
+    <div class="gonogo-block">
+      <div class="gonogo-label">Statut global</div>
+      <div class="gonogo-badge pending" id="globalStatus">
+        <div class="dot"></div>
+        <span>EN COURS</span>
+      </div>
+    </div>
+
+    <nav class="nav-sections">
+      <div class="nav-title">Sections</div>
+      <div class="nav-item active" onclick="showPanel('windy')">
+        <div class="nav-icon">🌐</div>
+        <div class="nav-text">Windy — Météo live</div>
+      </div>
+      <div class="nav-item" onclick="showPanel('sources')">
+        <div class="nav-icon">📡</div>
+        <div class="nav-text">Sources & consultation</div>
+        <div class="nav-badge" id="badge-sources">—</div>
+      </div>
+      <div class="nav-item" onclick="showPanel('vent')">
+        <div class="nav-icon">💨</div>
+        <div class="nav-text">Vent & turbulences</div>
+        <div class="nav-badge" id="badge-vent">—</div>
+      </div>
+      <div class="nav-item" onclick="showPanel('visibilite')">
+        <div class="nav-icon">👁️</div>
+        <div class="nav-text">Visibilité & nuages</div>
+        <div class="nav-badge" id="badge-visibilite">—</div>
+      </div>
+      <div class="nav-item" onclick="showPanel('precipitation')">
+        <div class="nav-icon">🌧️</div>
+        <div class="nav-text">Précipitations</div>
+        <div class="nav-badge" id="badge-precipitation">—</div>
+      </div>
+      <div class="nav-item" onclick="showPanel('temperature')">
+        <div class="nav-icon">🌡️</div>
+        <div class="nav-text">Température & givrage</div>
+        <div class="nav-badge" id="badge-temperature">—</div>
+      </div>
+      <div class="nav-item" onclick="showPanel('orages')">
+        <div class="nav-icon">⛈️</div>
+        <div class="nav-text">Orages & phénomènes</div>
+        <div class="nav-badge" id="badge-orages">—</div>
+      </div>
+      <div class="nav-item" onclick="showPanel('interferences')">
+        <div class="nav-icon">📶</div>
+        <div class="nav-text">Interférences & KP</div>
+        <div class="nav-badge" id="badge-interferences">—</div>
+      </div>
+      <div class="nav-item" onclick="showPanel('synthese')">
+        <div class="nav-icon">✅</div>
+        <div class="nav-text">Synthèse & décision</div>
+      </div>
+    </nav>
+
+    <div class="sidebar-actions">
+      <button class="btn btn-primary" onclick="generatePDF()">📄 Exporter PDF</button>
+      <button class="btn btn-outline" onclick="openEmailModal()">📧 Envoyer par email</button>
+      <button class="btn btn-danger" onclick="resetAll()">↺ Réinitialiser</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-header">
+      <div class="mission-fields">
+        <div class="field-group">
+          <div class="field-label">Date mission</div>
+          <input class="field-input" type="date" id="missionDate">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Heure décollage</div>
+          <input class="field-input" type="time" id="missionTime" style="min-width:90px">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Lieu / site</div>
+          <input class="field-input" type="text" id="missionSite" placeholder="Ex: Forêt de Breuches" style="min-width:200px">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Drone</div>
+          <input class="field-input" type="text" id="missionDrone" placeholder="Ex: DJI Mavic 3M" style="min-width:140px">
+        </div>
+      </div>
+    </div>
+
+    <!-- WINDY PANEL -->
+    <div class="panel active" id="panel-windy">
+      <div class="panel-title">Windy — Météo en temps réel</div>
+      <div class="panel-desc">Consultez les données météo de votre zone de vol directement intégrées depuis Windy.</div>
+
+      <div class="windy-container">
+        <div class="windy-header">
+          <div>
+            <div class="windy-logo">🌊 WINDY.COM</div>
+            <div class="windy-sub">Données météo temps réel — intégration directe</div>
+          </div>
+        </div>
+
+        <div class="location-bar">
+          <div class="loc-label">📍 Zone de vol :</div>
+          <input class="loc-input" id="locInput" type="text" placeholder="Ex: Luxeuil-les-Bains, Vesoul, coordonnées GPS..." value="Luxeuil-les-Bains">
+          <button class="loc-btn" onclick="loadWindy()">Charger Windy</button>
+        </div>
+
+        <div class="windy-tabs">
+          <div class="windy-tab active" onclick="switchWindyTab('map', this)">🗺️ Carte vent</div>
+          <div class="windy-tab" onclick="switchWindyTab('forecast', this)">📅 Prévisions</div>
+          <div class="windy-tab" onclick="switchWindyTab('webcam', this)">📸 Webcams</div>
+          <div class="windy-tab" onclick="switchWindyTab('links', this)">🔗 Liens directs</div>
+        </div>
+
+        <div class="windy-iframe-wrap" id="wrap-map">
+          <iframe id="windyFrame" src="https://embed.windy.com/embed2.html?lat=47.8&lon=6.35&zoom=10&level=surface&overlay=wind&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" allowfullscreen></iframe>
+        </div>
+
+        <div class="windy-iframe-wrap hidden" id="wrap-forecast">
+          <iframe src="https://embed.windy.com/embed2.html?lat=47.8&lon=6.35&zoom=10&level=surface&overlay=wind&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" allowfullscreen></iframe>
+        </div>
+
+        <div class="windy-iframe-wrap hidden" id="wrap-webcam">
+          <iframe src="https://embed.windy.com/embed2.html?lat=47.8&lon=6.35&zoom=10&level=surface&overlay=webcams&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" allowfullscreen></iframe>
+        </div>
+
+        <div class="windy-iframe-wrap hidden" id="wrap-links">
+          <div class="windy-link-block">
+            <a class="windy-link-item" href="https://www.windy.com/?wind,47.8,6.35,10" target="_blank">
+              <div class="windy-link-icon">💨</div>
+              <div class="windy-link-info">
+                <div class="windy-link-name">Carte des vents — Surface</div>
+                <div class="windy-link-desc">Visualisation temps réel du vent en surface sur votre zone</div>
+              </div>
+              <div class="windy-link-arrow">→</div>
+            </a>
+            <a class="windy-link-item" href="https://www.windy.com/?gust,47.8,6.35,10" target="_blank">
+              <div class="windy-link-icon">🌬️</div>
+              <div class="windy-link-info">
+                <div class="windy-link-name">Rafales de vent</div>
+                <div class="windy-link-desc">Couche dédiée aux rafales — critique pour les drones</div>
+              </div>
+              <div class="windy-link-arrow">→</div>
+            </a>
+            <a class="windy-link-item" href="https://www.windy.com/?rain,47.8,6.35,10" target="_blank">
+              <div class="windy-link-icon">🌧️</div>
+              <div class="windy-link-info">
+                <div class="windy-link-name">Précipitations & pluie</div>
+                <div class="windy-link-desc">Prévisions de précipitations heure par heure</div>
+              </div>
+              <div class="windy-link-arrow">→</div>
+            </a>
+            <a class="windy-link-item" href="https://www.windy.com/?clouds,47.8,6.35,10" target="_blank">
+              <div class="windy-link-icon">☁️</div>
+              <div class="windy-link-info">
+                <div class="windy-link-name">Couverture nuageuse</div>
+                <div class="windy-link-desc">Couverture nuageuse totale et basse altitude</div>
+              </div>
+              <div class="windy-link-arrow">→</div>
+            </a>
+            <a class="windy-link-item" href="https://www.windy.com/?visibility,47.8,6.35,10" target="_blank">
+              <div class="windy-link-icon">👁️</div>
+              <div class="windy-link-info">
+                <div class="windy-link-name">Visibilité atmosphérique</div>
+                <div class="windy-link-desc">Portée visuelle prévue — minimum DGAC 1500 m</div>
+              </div>
+              <div class="windy-link-arrow">→</div>
+            </a>
+            <a class="windy-link-item" href="https://www.windy.com/?cape,47.8,6.35,10" target="_blank">
+              <div class="windy-link-icon">⛈️</div>
+              <div class="windy-link-info">
+                <div class="windy-link-name">CAPE — Risque orageux</div>
+                <div class="windy-link-desc">Énergie potentielle convective disponible — orages</div>
+              </div>
+              <div class="windy-link-arrow">→</div>
+            </a>
+            <a class="windy-link-item" href="https://www.windy.com/station/pws-luxeuil" target="_blank">
+              <div class="windy-link-icon">📡</div>
+              <div class="windy-link-info">
+                <div class="windy-link-name">Station météo locale</div>
+                <div class="windy-link-desc">Données de stations sol proches de votre zone</div>
+              </div>
+              <div class="windy-link-arrow">→</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOURCES -->
+    <div class="panel" id="panel-sources">
+      <div class="panel-title">Sources & Consultation météo</div>
+      <div class="panel-desc">Vérification des sources officielles et de la cohérence des données — EU 2019/947 Art. 11</div>
+
+      <div class="section-card open" id="sec-sources">
+        <div class="section-header" onclick="toggleSection('sources')">
+          <div class="section-icon">📡</div>
+          <div class="section-info">
+            <div class="section-name">Sources de données consultées</div>
+            <div class="section-ref">DGAC / Météo-France / OACI</div>
+          </div>
+          <div class="section-counter" id="counter-sources">0/6</div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body">
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Consultation Windy.com — vent, rafales, précipitations, visibilité</div>
+              <div class="check-detail">Overlay vent surface + rafales. Vérifier cohérence avec sources officielles.</div>
+              <div class="check-tags"><span class="tag tag-info">Windy</span><span class="tag tag-reg">EU 2019/947</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Consultation Météo-France (meteofrance.fr ou app) — bulletin aéronautique</div>
+              <div class="check-detail">METAR/TAF aéroport référence + prévision locale. Vérifier si SIGMET actif sur la zone.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-reg">OACI</span></div>
+            </div>
+          </div>
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Vérification NOTAM via Géoportail / SIA France (sia.aviation-civile.gouv.fr)</div>
+              <div class="check-detail">Aucun NOTAM actif interdisant le vol sur la zone ou créant un espace temporaire (TFR).</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-reg">SERA.6001</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Consultation FFVL ou météo locale — données stations sol à proximité</div>
+              <div class="check-detail">Confronter données Windy avec une station sol réelle si disponible dans un rayon de 20 km.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Cohérence des sources : pas de contradiction majeure entre modèles</div>
+              <div class="check-detail">Si écart > 5 kt entre sources, appliquer le scénario le plus défavorable.</div>
+              <div class="check-tags"><span class="tag tag-warning">Vigilance</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Heure de consultation enregistrée — fraîcheur des données < 3h</div>
+              <div class="check-detail">En conditions évolutives, ré-actualiser les données 30 min avant le décollage.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VENT -->
+    <div class="panel" id="panel-vent">
+      <div class="panel-title">Vent & Turbulences</div>
+      <div class="panel-desc">Analyse du vent en surface et en altitude. Seuils réglementaires DGAC et limites constructeur.</div>
+
+      <div class="section-card open" id="sec-vent-module">
+        <div class="section-header" onclick="toggleSection('vent-module')">
+          <div class="section-icon">🎯</div>
+          <div class="section-info">
+            <div class="section-name">Évaluation interactive du vent</div>
+            <div class="section-ref">Module d'analyse</div>
+          </div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body">
+          <div class="wind-module">
+            <div class="module-title">// ANALYSEUR VENT</div>
+            <div class="wind-layout">
+              <div class="rose-wrap">
+                <canvas id="windRose" width="110" height="110"></canvas>
+              </div>
+              <div class="wind-controls">
+                <div class="control-row">
+                  <div class="control-label">Direction : <span id="dirLabel">270° (W)</span></div>
+                  <input class="control-slider" type="range" min="0" max="359" value="270" id="windDir" oninput="updateWind()">
+                </div>
+                <div class="control-row">
+                  <div class="control-label">Vent moyen : <span id="windValLabel">15 km/h</span></div>
+                  <input class="control-slider" type="range" min="0" max="80" value="15" id="windSpeed" oninput="updateWind()">
+                </div>
+                <div class="control-row">
+                  <div class="control-label">Rafales : <span id="gustValLabel">22 km/h</span></div>
+                  <input class="control-slider" type="range" min="0" max="100" value="22" id="windGust" oninput="updateWind()">
+                </div>
+                <div id="windStatusBadge" class="wind-status" style="background:var(--green-dim);color:var(--green)">
+                  <span>●</span> CONDITIONS ACCEPTABLES
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card open" id="sec-vent">
+        <div class="section-header" onclick="toggleSection('vent')">
+          <div class="section-icon">💨</div>
+          <div class="section-info">
+            <div class="section-name">Points de vérification vent</div>
+            <div class="section-ref">EU 2019/947 — Limites constructeur drone</div>
+          </div>
+          <div class="section-counter" id="counter-vent">0/8</div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body">
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Vent moyen surface ≤ limite constructeur (vérifier manuel drone)</div>
+              <div class="check-detail">DJI Mavic 3M : max 12 m/s (43 km/h). DJI Mini 4 Pro : max 10,7 m/s (38 km/h). AGRAS T100 : selon manuel.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-reg">Constructeur</span></div>
+            </div>
+          </div>
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Rafales ≤ limite constructeur — marge de sécurité de 20% appliquée</div>
+              <div class="check-detail">Les rafales sont le paramètre critique. Appliquer une marge de 20% sur la limite max. Si rafales > 80% de la limite : NOGO recommandé.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Direction du vent identifiée — axe de décollage/atterrissage adapté</div>
+              <div class="check-detail">Décollage face au vent préférable. Éviter vent de dos > 5 m/s. Identifier zone de recirculation si relief proche.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Cisaillement de vent : pas de variation brutale de direction ou vitesse en altitude</div>
+              <div class="check-detail">Risque élevé en cas de front actif ou d'inversion thermique. Consulter le profil vertical sur Windy (altitude 50m, 100m).</div>
+              <div class="check-tags"><span class="tag tag-warning">Vigilance</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Turbulences mécaniques : relief, bâtiments, forêts à proximité analysés</div>
+              <div class="check-detail">Tourbillons de sillage en bord de forêt, rues canyon en urbain, talus exposés. Maintenir marge > 100m si vent > 30 km/h.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Turbulences thermiques : heure de vol analysée (éviter 11h-16h en été)</div>
+              <div class="check-detail">Les ascendances thermiques fortes peuvent déstabiliser le vol. Préférer tôt le matin ou fin de journée. Surveiller cumulus en développement.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Consommation batterie accrue par le vent prise en compte dans le planning</div>
+              <div class="check-detail">+20-40% de consommation en conditions venteuses. Réduire la durée de vol et augmenter la marge de retour batterie.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Évolution du vent sur la durée de mission anticipée (Windy timeline consulté)</div>
+              <div class="check-detail">Consulter l'évolution heure par heure sur Windy. En cas de renforcement prévu, adapter la durée de mission.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISIBILITE -->
+    <div class="panel" id="panel-visibilite">
+      <div class="panel-title">Visibilité & Couverture nuageuse</div>
+      <div class="panel-desc">Minima réglementaires DGAC — Arrêté 3 décembre 2020 — Règle des 1500 m de visibilité et séparation nuages.</div>
+
+      <div class="section-card open" id="sec-visibilite">
+        <div class="section-header" onclick="toggleSection('visibilite')">
+          <div class="section-icon">👁️</div>
+          <div class="section-info">
+            <div class="section-name">Visibilité atmosphérique</div>
+            <div class="section-ref">Arrêté 3/12/2020 — Catégorie Open / Specific</div>
+          </div>
+          <div class="section-counter" id="counter-visibilite">0/7</div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body">
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Visibilité météorologique ≥ 1500 m (catégorie Open)</div>
+              <div class="check-detail">Règle DGAC applicable en catégorie Open. En catégorie Spécifique STS-01/02, vérifier les conditions particulières du scénario.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-reg">Art. 11 EU 2019/947</span></div>
+            </div>
+          </div>
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Contact visuel avec le drone maintenu en permanence (VLOS)</div>
+              <div class="check-detail">Le télépilote doit pouvoir à tout moment identifier l'orientation du drone et détecter tout aéronef à proximité sans aide optique.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-reg">VLOS obligatoire</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Brouillard, brume ou brume sèche : absents ou < 10% de réduction de la visibilité locale</div>
+              <div class="check-detail">En cas de brouillard matinal, attendre dissipation complète. Ne pas voler dans le brouillard résiduel.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Base des nuages ≥ 150 m (500 ft) au-dessus du sol en catégorie Open</div>
+              <div class="check-detail">Séparation verticale minimale avec les nuages. En cas de plafond bas, le vol peut être impossible même si la visibilité horizontale est correcte.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Couverture nuageuse analysée : pas de cumulus congestus ou cumulonimbus sur la zone</div>
+              <div class="check-detail">Couverture < 8 octas acceptable. Nébulosité 7-8 octas avec plafond bas : VOL DÉCONSEILLÉ.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Visibilité en altitude de travail confirmée (50-120 m AGL)</div>
+              <div class="check-detail">Même si la visibilité au sol est correcte, vérifier qu'aucune couche de brouillard ou stratus ne compromet la visibilité à l'altitude de travail.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Éblouissement solaire : axe de vol et heure adaptés (soleil bas à l'horizon)</div>
+              <div class="check-detail">Voler avec le soleil dans le dos si possible. Le soleil bas le matin ou le soir peut créer un éblouissement dangereux rendant le drone invisible.</div>
+              <div class="check-tags"><span class="tag tag-warning">Vigilance</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRECIPITATION -->
+    <div class="panel" id="panel-precipitation">
+      <div class="panel-title">Précipitations & Phénomènes humides</div>
+      <div class="panel-desc">La pluie, la neige et le givre sont incompatibles avec la plupart des drones. Appliquer les limites constructeur.</div>
+
+      <div class="section-card open" id="sec-precipitation">
+        <div class="section-header" onclick="toggleSection('precipitation')">
+          <div class="section-icon">🌧️</div>
+          <div class="section-info">
+            <div class="section-name">Précipitations</div>
+            <div class="section-ref">Limites constructeur — IP Rating</div>
+          </div>
+          <div class="section-counter" id="counter-precipitation">0/6</div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body">
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Absence de précipitations actives sur la zone (pluie, neige, grêle, bruine)</div>
+              <div class="check-detail">DJI Mavic 3M et Mini 4 Pro ne sont pas IP67. Toute précipitation = NOGO sauf drones spécifiés IP67+.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-reg">IP Rating constructeur</span></div>
+            </div>
+          </div>
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Aucune précipitation prévue dans les 2h suivant le début du vol</div>
+              <div class="check-detail">Surveiller sur Windy l'évolution temporelle (slider horaire). Être capable d'atterrir avant les premières précipitations.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Rosée, humidité relative > 90% : risque de condensation sur les capteurs</div>
+              <div class="check-detail">Particulièrement critique pour les capteurs multispectral et les caméras. Attendre que l'humidité soit inférieure à 80% ou que les capteurs soient à température ambiante.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Sol mouillé ou enneigé : risque de projections sur les hélices et moteurs</div>
+              <div class="check-detail">Utiliser une plateforme de décollage surélevée. Protéger le drone lors du transport et du positionnement.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Neige ou grêle : NOGO absolu sauf certification spécifique</div>
+              <div class="check-detail">Les impacts de grêle même faible peuvent endommager les hélices et obstruer les systèmes de refroidissement des ESC.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Brouillard de gel ou givre au sol : conditions givrant présentes ?</div>
+              <div class="check-detail">En dessous de 0°C avec humidité élevée : risque de givrage des hélices et des capteurs. Voir section Température & Givrage.</div>
+              <div class="check-tags"><span class="tag tag-warning">Vigilance</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEMPERATURE -->
+    <div class="panel" id="panel-temperature">
+      <div class="panel-title">Température & Givrage</div>
+      <div class="panel-desc">Les températures extrêmes affectent les batteries Li-Po et les performances de vol. Risque de givrage en conditions froides et humides.</div>
+
+      <div class="section-card open" id="sec-temperature">
+        <div class="section-header" onclick="toggleSection('temperature')">
+          <div class="section-icon">🌡️</div>
+          <div class="section-info">
+            <div class="section-name">Température & Batteries</div>
+            <div class="section-ref">Spécifications constructeur — Li-Po performance</div>
+          </div>
+          <div class="section-counter" id="counter-temperature">0/7</div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body">
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Température ambiante dans la plage opérationnelle du drone</div>
+              <div class="check-detail">DJI Mavic 3M : -10°C à +40°C. DJI Mini 4 Pro : -10°C à +40°C. En dehors de cette plage : NOGO.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-reg">Manuel constructeur</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Batteries Li-Po préchauffées si T° < 10°C</div>
+              <div class="check-detail">En dessous de 10°C, les batteries Li-Po perdent 20-40% de capacité. Préchauffer à l'intérieur jusqu'à > 20°C avant utilisation. Surveiller le BMS.</div>
+              <div class="check-tags"><span class="tag tag-warning">Vigilance</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Marge d'autonomie batterie augmentée de 30% si T° < 5°C</div>
+              <div class="check-detail">Réduire le plan de vol en conséquence. Ne jamais descendre sous 20% de batterie par temps froid.</div>
+            </div>
+          </div>
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Risque de givrage des hélices évalué (T° < 0°C + humidité > 75%)</div>
+              <div class="check-detail">Le givrage des hélices est brutal et peut causer une perte de sustentation soudaine. En conditions givrant : NOGO absolu.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Température élevée (> 35°C) : surchauffe des ESC et batteries surveillée</div>
+              <div class="check-detail">Éviter les vols prolongés en plein soleil. Laisser refroidir le drone entre les batteries. Ombre pendant la préparation.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Altitude du site : densité d'air réduite si altitude > 1500 m MSL</div>
+              <div class="check-detail">En altitude, réduire la charge utile et surveiller les performances de montée. Les Vosges peuvent atteindre 1424 m (Ballon d'Alsace).</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Transport et stockage des batteries dans les conditions requises</div>
+              <div class="check-detail">Ne pas laisser les batteries dans un véhicule sous le soleil (T° > 50°C en habitacle). Transport dans sac ignifugé recommandé.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORAGES -->
+    <div class="panel" id="panel-orages">
+      <div class="panel-title">Orages & Phénomènes dangereux</div>
+      <div class="panel-desc">Les orages et phénomènes convectifs sont des conditions de NOGO absolu. Distances minimales de sécurité à respecter impérativement.</div>
+
+      <div class="section-card open" id="sec-orages">
+        <div class="section-header" onclick="toggleSection('orages')">
+          <div class="section-icon">⛈️</div>
+          <div class="section-info">
+            <div class="section-name">Orages, grêle & phénomènes convectifs</div>
+            <div class="section-ref">NOGO absolu — distances sécurité OACI</div>
+          </div>
+          <div class="section-counter" id="counter-orages">0/6</div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body">
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Aucun orage actif dans un rayon de 30 km de la zone de vol</div>
+              <div class="check-detail">Un orage peut se déplacer à 50-80 km/h. A 30 km, le temps de réaction est de moins de 30 minutes. Distance minimale recommandée : 30 km.</div>
+              <div class="check-tags"><span class="tag tag-critical">NOGO absolu</span></div>
+            </div>
+          </div>
+          <div class="check-item critical" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Indice CAPE (Windy) < 500 J/kg sur la zone</div>
+              <div class="check-detail">CAPE > 1000 J/kg = risque orageux fort. CAPE > 2500 J/kg = orages violents possibles. Consulter la couche CAPE sur Windy.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-info">Windy CAPE</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Cumulus congestus ou cumulonimbus absents sur la zone et les 50 km alentour</div>
+              <div class="check-detail">Les Cb sont visibles à grande distance. Leur présence même éloignée signale une atmosphère instable et turbulente en altitude.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Vent en altitude cohérent — pas de ligne de grains prévue (Windy consulté)</div>
+              <div class="check-detail">Les lignes de grains peuvent se former rapidement et se déplacer à grande vitesse. Surveiller les cartes de précipitations horaires.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Aucun bulletin SIGMET ou AIRMET actif sur la zone (précipitations verglaçantes, turbulences)</div>
+              <div class="check-detail">Consulter le SIA France (sia.aviation-civile.gouv.fr) pour les SIGMET et AIRMET actifs sur le FIR Paris.</div>
+              <div class="check-tags"><span class="tag tag-reg">OACI / SIGMET</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Procédure d'urgence orage définie : atterrissage immédiat si tonnerre entendu</div>
+              <div class="check-detail">Règle : si le tonnerre est audible, la foudre est à moins de 20 km. Atterrir immédiatement et mettre le drone à l'abri.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERFERENCES -->
+    <div class="panel" id="panel-interferences">
+      <div class="panel-title">Interférences & Indice Kp géomagnétique</div>
+      <div class="panel-desc">Les perturbations électromagnétiques et géomagnétiques peuvent affecter le GPS et la boussole du drone.</div>
+
+      <div class="section-card open" id="sec-interferences">
+        <div class="section-header" onclick="toggleSection('interferences')">
+          <div class="section-icon">📶</div>
+          <div class="section-info">
+            <div class="section-name">Perturbations électromagnétiques & KP</div>
+            <div class="section-ref">GPS / Boussole — SpaceWeatherLive</div>
+          </div>
+          <div class="section-counter" id="counter-interferences">0/7</div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body">
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Indice KP géomagnétique ≤ 4 (SpaceWeatherLive.com ou NOAA)</div>
+              <div class="check-detail">KP 0-3 : conditions nominales. KP 4 : surveillance. KP 5+ : tempête géomagnétique mineure — précaution GPS. KP 7+ : NOGO recommandé.</div>
+              <div class="check-tags"><span class="tag tag-info">SpaceWeatherLive</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Lignes haute tension, antennes, radars dans un rayon < 500 m identifiés</div>
+              <div class="check-detail">Les lignes HTA/HTB génèrent des champs électromagnétiques pouvant perturber la boussole. Maintenir une distance > 200m des lignes HT.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Nombre de satellites GPS suffisant avant décollage (≥ 12 satellites)</div>
+              <div class="check-detail">Attendre minimum 12 satellites avec PDOP < 2 avant le décollage. En dessous de 8 satellites, ne pas décoller.</div>
+              <div class="check-tags"><span class="tag tag-warning">Vigilance</span></div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Calibration boussole effectuée si changement de zone géographique > 50 km</div>
+              <div class="check-detail">Toujours calibrer la boussole loin des structures métalliques et loin des lignes HT. Sur terrain plat et dégagé.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Réseau téléphonique / RC Link signal testé sur la zone avant le vol</div>
+              <div class="check-detail">En cas de coupure du signal de télécommande, le comportement du drone (RTH, hover, atterrissage) doit être configuré et connu.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Interférences 2.4 GHz / 5.8 GHz évaluées (zones industrielles, événements)</div>
+              <div class="check-detail">Zones industrielles denses, stades, marchés peuvent saturer les fréquences RC. Tester la liaison RC avant décollage.</div>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleItem(this)">
+            <div class="check-box"></div>
+            <div class="check-content">
+              <div class="check-text">Déclaration AlphaTango validée — autorisation espaces contrôlés si nécessaire</div>
+              <div class="check-detail">Vérifier la validité de la déclaration d'exploitation et des autorisations d'espace aérien via AlphaTango ou Géoportail aérien.</div>
+              <div class="check-tags"><span class="tag tag-critical">Critique</span><span class="tag tag-reg">AlphaTango</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYNTHESE -->
+    <div class="panel" id="panel-synthese">
+      <div class="panel-title">Synthèse & Décision de vol</div>
+      <div class="panel-desc">Récapitulatif de l'ensemble des vérifications. Décision GO / CAUTION / NO-GO et signature télépilote.</div>
+
+      <div class="synth-grid">
+        <div class="synth-card green">
+          <div class="synth-card-title">Points validés</div>
+          <div class="synth-card-value" id="synthChecked">0</div>
+          <div class="synth-card-sub">éléments vérifiés</div>
+        </div>
+        <div class="synth-card blue">
+          <div class="synth-card-title">Total checklist</div>
+          <div class="synth-card-value" id="synthTotal">0</div>
+          <div class="synth-card-sub">points au total</div>
+        </div>
+        <div class="synth-card orange">
+          <div class="synth-card-title">Restants</div>
+          <div class="synth-card-value" id="synthRemaining">0</div>
+          <div class="synth-card-sub">à vérifier</div>
+        </div>
+        <div class="synth-card" id="synthPctCard">
+          <div class="synth-card-title">Complétude</div>
+          <div class="synth-card-value" id="synthPct">0%</div>
+          <div class="synth-card-sub">de la checklist</div>
+        </div>
+      </div>
+
+      <div class="decision-block">
+        <div class="decision-title">Décision finale du télépilote</div>
+        <div class="decision-options">
+          <button class="decision-btn go-btn" onclick="setDecision('GO', this)">✅ GO — Vol autorisé</button>
+          <button class="decision-btn caution-btn" onclick="setDecision('CAUTION', this)">⚠️ CAUTION — Vol sous conditions</button>
+          <button class="decision-btn nogo-btn" onclick="setDecision('NOGO', this)">🚫 NO-GO — Vol annulé</button>
+        </div>
+      </div>
+
+      <div class="section-card" id="sec-obs">
+        <div class="section-header" onclick="toggleSection('obs')">
+          <div class="section-icon">📝</div>
+          <div class="section-info">
+            <div class="section-name">Observations & conditions particulières</div>
+          </div>
+          <div class="section-chevron">▼</div>
+        </div>
+        <div class="section-body" style="padding:14px 18px">
+          <textarea class="obs-textarea" id="obsText" placeholder="Notez ici les conditions particulières, les points de vigilance, les mesures compensatoires prises, les contacts ATC si applicable..."></textarea>
+        </div>
+      </div>
+
+      <div class="decision-block" style="margin-top:16px">
+        <div class="decision-title">Signatures</div>
+        <div class="sig-grid">
+          <div class="sig-field">
+            <div class="sig-label">Télépilote responsable</div>
+            <input class="sig-input" type="text" placeholder="Nom — Prénom" id="sigName">
+          </div>
+          <div class="sig-field">
+            <div class="sig-label">N° Attestation / Licence DGAC</div>
+            <input class="sig-input" type="text" placeholder="Ex: FR-UAS-2023-XXXXX" id="sigLicense">
+          </div>
+          <div class="sig-field">
+            <div class="sig-label">Date & heure de signature</div>
+            <input class="sig-input" type="text" id="sigDate" readonly>
+          </div>
+          <div class="sig-field">
+            <div class="sig-label">Visa / Confirmation</div>
+            <input class="sig-input" type="text" placeholder="Lu et approuvé" id="sigVisa">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px;width:100%;padding:12px" onclick="stamp()">📌 Horodater la décision</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL EMAIL -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <div class="modal-title">📧 Envoyer par email via EmailJS</div>
+    <div class="modal-field">
+      <div class="modal-label">SERVICE ID EmailJS</div>
+      <input class="modal-input" type="text" id="ejsService" placeholder="service_xxxxxxx">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">TEMPLATE ID</div>
+      <input class="modal-input" type="text" id="ejsTemplate" placeholder="template_xxxxxxx">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">PUBLIC KEY</div>
+      <input class="modal-input" type="text" id="ejsKey" placeholder="Votre clé publique EmailJS">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">DESTINATAIRE</div>
+      <input class="modal-input" type="email" id="ejsTo" value="aphdrone@gmail.com">
+    </div>
+    <div class="modal-note">
+      ℹ️ EmailJS gratuit : emailjs.com → créer compte → connecter Gmail → créer template avec variables <code>{{message}}</code>, <code>{{subject}}</code>, <code>{{to_email}}</code>.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="sendEmail()" style="flex:1">Envoyer</button>
+      <button class="btn btn-outline" onclick="closeEmailModal()" style="flex:1">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== STATE ====================
+let totalItems = 0;
+let checkedItems = 0;
+let currentDecision = null;
+const sectionIds = ['sources', 'vent', 'visibilite', 'precipitation', 'temperature', 'orages', 'interferences'];
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  document.getElementById('missionDate').value = now.toISOString().split('T')[0];
+  document.getElementById('missionTime').value = now.toTimeString().slice(0,5);
+
+  countItems();
+  updateProgress();
+  updateWind();
+  drawWindRose(270, 15, 22);
+});
+
+function countItems() {
+  const items = document.querySelectorAll('.check-item');
+  totalItems = items.length;
+  items.forEach(item => {
+    item.addEventListener('click', function() {
+      // handled by onclick
+    });
+  });
+}
+
+// ==================== NAVIGATION ====================
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(id)) {
+      n.classList.add('active');
+    }
+  });
+
+  if (id === 'synthese') updateSynthese();
+}
+
+// ==================== TOGGLE ITEM ====================
+function toggleItem(el) {
+  el.classList.toggle('checked');
+  updateProgress();
+  updateSectionBadges();
+}
+
+// ==================== SECTION TOGGLE ====================
+function toggleSection(id) {
+  const card = document.getElementById('sec-' + id);
+  if (card) card.classList.toggle('open');
+}
+
+// ==================== PROGRESS ====================
+function updateProgress() {
+  const items = document.querySelectorAll('.check-item');
+  totalItems = items.length;
+  checkedItems = document.querySelectorAll('.check-item.checked').length;
+
+  document.getElementById('checkedCount').textContent = checkedItems;
+  document.getElementById('progressTotal').textContent = '/ ' + totalItems + ' points vérifiés';
+
+  const pct = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+  document.getElementById('ringPct').textContent = pct + '%';
+
+  const circumference = 163;
+  const offset = circumference - (pct / 100) * circumference;
+  const ring = document.getElementById('ringFill');
+  ring.style.strokeDashoffset = offset;
+
+  if (pct < 50) ring.style.stroke = '#ef4444';
+  else if (pct < 80) ring.style.stroke = '#f59e0b';
+  else ring.style.stroke = '#10b981';
+
+  updateGlobalStatus();
+}
+
+function updateGlobalStatus() {
+  const el = document.getElementById('globalStatus');
+  const pct = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+  const hasCriticalUnchecked = Array.from(document.querySelectorAll('.check-item.critical')).some(i => !i.classList.contains('checked'));
+
+  if (currentDecision === 'NOGO') {
+    el.className = 'gonogo-badge nogo';
+    el.innerHTML = '<div class="dot"></div><span>NO-GO</span>';
+  } else if (hasCriticalUnchecked) {
+    el.className = 'gonogo-badge nogo';
+    el.innerHTML = '<div class="dot"></div><span>CRITIQUE MANQUANT</span>';
+  } else if (pct === 100 && currentDecision === 'GO') {
+    el.className = 'gonogo-badge go';
+    el.innerHTML = '<div class="dot"></div><span>GO</span>';
+  } else if (currentDecision === 'CAUTION') {
+    el.className = 'gonogo-badge caution';
+    el.innerHTML = '<div class="dot"></div><span>CAUTION</span>';
+  } else {
+    el.className = 'gonogo-badge pending';
+    el.innerHTML = '<div class="dot"></div><span>EN COURS</span>';
+  }
+}
+
+function updateSectionBadges() {
+  sectionIds.forEach(secId => {
+    const badge = document.getElementById('badge-' + secId);
+    if (!badge) return;
+    const panel = document.getElementById('panel-' + secId);
+    if (!panel) return;
+    const items = panel.querySelectorAll('.check-item');
+    const done = panel.querySelectorAll('.check-item.checked').length;
+    const total = items.length;
+    badge.textContent = done + '/' + total;
+
+    if (done === total && total > 0) {
+      badge.className = 'nav-badge done';
+    } else if (done > 0) {
+      badge.className = 'nav-badge partial';
+    } else {
+      badge.className = 'nav-badge';
+    }
+
+    // update counters
+    const counter = document.getElementById('counter-' + secId);
+    if (counter) {
+      counter.textContent = done + '/' + total;
+      if (done === total && total > 0) counter.className = 'section-counter all-done';
+      else counter.className = 'section-counter';
+    }
+  });
+}
+
+// ==================== WINDY ====================
+let currentWindyTab = 'map';
+
+function switchWindyTab(tab, el) {
+  document.querySelectorAll('.windy-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  document.querySelectorAll('.windy-iframe-wrap').forEach(w => w.classList.add('hidden'));
+  document.getElementById('wrap-' + tab).classList.remove('hidden');
+  currentWindyTab = tab;
+}
+
+function loadWindy() {
+  const loc = document.getElementById('locInput').value.trim();
+  if (!loc) return;
+  showToast('🌐 Chargement Windy pour : ' + loc);
+}
+
+// ==================== WIND ROSE ====================
+const DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+
+function dirName(deg) {
+  const idx = Math.round(deg / 22.5) % 16;
+  return DIRS[idx];
+}
+
+function updateWind() {
+  const dir = parseInt(document.getElementById('windDir').value);
+  const spd = parseInt(document.getElementById('windSpeed').value);
+  const gust = parseInt(document.getElementById('windGust').value);
+
+  document.getElementById('dirLabel').textContent = dir + '° (' + dirName(dir) + ')';
+  document.getElementById('windValLabel').textContent = spd + ' km/h';
+  document.getElementById('gustValLabel').textContent = gust + ' km/h';
+
+  drawWindRose(dir, spd, gust);
+
+  const badge = document.getElementById('windStatusBadge');
+  if (gust >= 50 || spd >= 43) {
+    badge.style.background = 'var(--red-dim)';
+    badge.style.color = 'var(--red)';
+    badge.innerHTML = '<span>●</span> NOGO — LIMITES DÉPASSÉES';
+  } else if (gust >= 38 || spd >= 30) {
+    badge.style.background = 'var(--orange-dim)';
+    badge.style.color = 'var(--orange)';
+    badge.innerHTML = '<span>●</span> CAUTION — PROCHE DES LIMITES';
+  } else {
+    badge.style.background = 'var(--green-dim)';
+    badge.style.color = 'var(--green)';
+    badge.innerHTML = '<span>●</span> CONDITIONS ACCEPTABLES';
+  }
+}
+
+function drawWindRose(dir, spd, gust) {
+  const canvas = document.getElementById('windRose');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = 110, H = 110, cx = W/2, cy = H/2, r = 46;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // BG
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = '#141921';
+  ctx.fill();
+  ctx.strokeStyle = '#1e2d45';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Grid circles
+  [0.33, 0.66, 1].forEach(f => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * f, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(30,45,69,0.8)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Cardinal lines
+  ['N','E','S','O'].forEach((d, i) => {
+    const angle = (i * Math.PI/2) - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
+    ctx.strokeStyle = 'rgba(30,45,69,0.6)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const lx = cx + Math.cos(angle) * (r + 10);
+    const ly = cy + Math.sin(angle) * (r + 10);
+    ctx.fillText(d, lx, ly);
+  });
+
+  // Wind arrow (FROM direction, arrow shows where wind blows TO)
+  const rad = (dir - 90) * Math.PI / 180;
+  const maxR = r - 8;
+  const arrowLen = Math.min((spd / 50) * maxR, maxR);
+
+  // Arrow body
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(rad) * arrowLen, cy + Math.sin(rad) * arrowLen);
+  ctx.strokeStyle = gust >= 50 ? '#ef4444' : gust >= 38 ? '#f59e0b' : '#3b82f6';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Arrowhead
+  const headLen = 8;
+  const headAngle = Math.PI / 6;
+  const ax = cx + Math.cos(rad) * arrowLen;
+  const ay = cy + Math.sin(rad) * arrowLen;
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(ax - headLen * Math.cos(rad - headAngle), ay - headLen * Math.sin(rad - headAngle));
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(ax - headLen * Math.cos(rad + headAngle), ay - headLen * Math.sin(rad + headAngle));
+  ctx.strokeStyle = gust >= 50 ? '#ef4444' : gust >= 38 ? '#f59e0b' : '#3b82f6';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Gust circle
+  if (gust > spd) {
+    const gustR = Math.min((gust / 100) * maxR, maxR);
+    ctx.beginPath();
+    ctx.arc(cx, cy, gustR, 0, Math.PI * 2);
+    ctx.strokeStyle = gust >= 50 ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, 3, 0, Math.PI*2);
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fill();
+}
+
+// ==================== DECISION ====================
+function setDecision(dec, btn) {
+  currentDecision = dec;
+  document.querySelectorAll('.decision-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateGlobalStatus();
+}
+
+function stamp() {
+  const now = new Date();
+  document.getElementById('sigDate').value = now.toLocaleDateString('fr-FR') + ' à ' + now.toLocaleTimeString('fr-FR');
+  showToast('✅ Décision horodatée');
+}
+
+// ==================== SYNTHESE ====================
+function updateSynthese() {
+  const items = document.querySelectorAll('.check-item');
+  const checked = document.querySelectorAll('.check-item.checked').length;
+  const total = items.length;
+  const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+  document.getElementById('synthChecked').textContent = checked;
+  document.getElementById('synthTotal').textContent = total;
+  document.getElementById('synthRemaining').textContent = total - checked;
+  document.getElementById('synthPct').textContent = pct + '%';
+}
+
+// ==================== PDF ====================
+function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { showToast('⚠️ jsPDF non chargé'); return; }
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const date = document.getElementById('missionDate').value;
+  const time = document.getElementById('missionTime').value;
+  const site = document.getElementById('missionSite').value || 'Non renseigné';
+  const drone = document.getElementById('missionDrone').value || 'Non renseigné';
+  const decision = currentDecision || 'NON DÉFINIE';
+  const checked = document.querySelectorAll('.check-item.checked').length;
+  const total = document.querySelectorAll('.check-item').length;
+
+  let y = 15;
+
+  // Header
+  doc.setFillColor(14, 18, 25);
+  doc.rect(0, 0, 210, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.text('APH DRONE — CHECKLIST MÉTÉO DGAC', 10, 13);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text('EU Regulation 2019/947 — Arrêté 3 décembre 2020', 10, 21);
+  doc.text('Généré le ' + new Date().toLocaleDateString('fr-FR') + ' à ' + new Date().toLocaleTimeString('fr-FR'), 210-10, 21, { align: 'right' });
+
+  y = 40;
+  doc.setTextColor(50, 50, 50);
+
+  // Mission info
+  doc.setFillColor(245, 247, 250);
+  doc.rect(10, y-5, 190, 28, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(30, 30, 30);
+  doc.text('INFORMATIONS MISSION', 14, y+2);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Date : ' + date + '  |  Heure : ' + time, 14, y+9);
+  doc.text('Site : ' + site, 14, y+16);
+  doc.text('Drone : ' + drone, 110, y+9);
+  doc.text('Avancement : ' + checked + '/' + total + ' points (' + Math.round(checked/total*100) + '%)', 110, y+16);
+
+  y += 38;
+
+  // Decision
+  const decColors = { GO: [16, 185, 129], CAUTION: [245, 158, 11], NOGO: [239, 68, 68] };
+  const dc = decColors[decision] || [100, 116, 139];
+  doc.setFillColor(...dc);
+  doc.rect(10, y-5, 190, 14, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('DÉCISION : ' + decision, 105, y+3, { align: 'center' });
+
+  y += 20;
+
+  // Sections summary
+  const sections = [
+    { id: 'sources', name: 'Sources & Consultation' },
+    { id: 'vent', name: 'Vent & Turbulences' },
+    { id: 'visibilite', name: 'Visibilité & Nuages' },
+    { id: 'precipitation', name: 'Précipitations' },
+    { id: 'temperature', name: 'Température & Givrage' },
+    { id: 'orages', name: 'Orages & Phénomènes' },
+    { id: 'interferences', name: 'Interférences & KP' }
+  ];
+
+  doc.setTextColor(30, 30, 30);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('RÉCAPITULATIF PAR SECTION', 14, y);
+  y += 8;
+
+  sections.forEach((sec, i) => {
+    const panel = document.getElementById('panel-' + sec.id);
+    if (!panel) return;
+    const items = panel.querySelectorAll('.check-item');
+    const done = panel.querySelectorAll('.check-item.checked').length;
+    const total = items.length;
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
+
+    if (i % 2 === 0) doc.setFillColor(248, 250, 252);
+    else doc.setFillColor(255, 255, 255);
+    doc.rect(10, y-4, 190, 9, 'F');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(30, 30, 30);
+    doc.text(sec.name, 14, y+1);
+    doc.text(done + '/' + total, 145, y+1, { align: 'right' });
+
+    const barX = 155, barW = 44, barH = 3;
+    doc.setFillColor(220, 228, 240);
+    doc.rect(barX, y-1, barW, barH, 'F');
+    const fillColor = pct === 100 ? [16, 185, 129] : pct >= 50 ? [245, 158, 11] : [239, 68, 68];
+    doc.setFillColor(...fillColor);
+    doc.rect(barX, y-1, barW * pct / 100, barH, 'F');
+
+    y += 10;
+  });
+
+  // Observations
+  const obs = document.getElementById('obsText').value;
+  if (obs) {
+    y += 5;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text('OBSERVATIONS', 14, y);
+    y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const lines = doc.splitTextToSize(obs, 180);
+    doc.text(lines, 14, y);
+    y += lines.length * 5 + 5;
+  }
+
+  // Signature block
+  y = Math.max(y, 245);
+  doc.setFillColor(245, 247, 250);
+  doc.rect(10, y-5, 190, 35, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(30, 30, 30);
+  doc.text('SIGNATURE TÉLÉPILOTE', 14, y+2);
+
+  const sigName = document.getElementById('sigName').value || '___________________________';
+  const sigLic = document.getElementById('sigLicense').value || '___________________________';
+  const sigDate = document.getElementById('sigDate').value || '___________________________';
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Nom : ' + sigName, 14, y+12);
+  doc.text('Licence : ' + sigLic, 14, y+20);
+  doc.text('Date de signature : ' + sigDate, 110, y+12);
+
+  // Footer
+  doc.setFillColor(14, 18, 25);
+  doc.rect(0, 287, 210, 10, 'F');
+  doc.setTextColor(100, 116, 139);
+  doc.setFontSize(7);
+  doc.text('APH Drone SARL — Luxeuil-les-Bains (70) — DGAC EU 2019/947 — Document généré automatiquement', 105, 293, { align: 'center' });
+
+  const fname = 'checklist-meteo-' + date + '.pdf';
+  doc.save(fname);
+  showToast('📄 PDF exporté : ' + fname);
+}
+
+// ==================== EMAIL ====================
+function openEmailModal() {
+  document.getElementById('emailModal').classList.add('open');
+}
+
+function closeEmailModal() {
+  document.getElementById('emailModal').classList.remove('open');
+}
+
+function sendEmail() {
+  const serviceId = document.getElementById('ejsService').value.trim();
+  const templateId = document.getElementById('ejsTemplate').value.trim();
+  const key = document.getElementById('ejsKey').value.trim();
+  const to = document.getElementById('ejsTo').value.trim();
+
+  if (!serviceId || !templateId || !key) {
+    showToast('⚠️ Renseignez tous les champs EmailJS');
+    return;
+  }
+
+  const checked = document.querySelectorAll('.check-item.checked').length;
+  const total = document.querySelectorAll('.check-item').length;
+  const date = document.getElementById('missionDate').value;
+  const site = document.getElementById('missionSite').value;
+  const decision = currentDecision || 'NON DÉFINIE';
+
+  emailjs.init(key);
+
+  const params = {
+    to_email: to,
+    subject: 'Checklist Météo APH Drone — ' + date + ' — ' + decision,
+    message: `CHECKLIST MÉTÉO DRONE — APH DRONE\n\nDate : ${date}\nSite : ${site}\nDécision : ${decision}\nAvancement : ${checked}/${total} points\n\nObservations :\n${document.getElementById('obsText').value || 'Aucune'}\n\nTélépilote : ${document.getElementById('sigName').value || 'Non renseigné'}\nLicence : ${document.getElementById('sigLicense').value || 'Non renseigné'}`
+  };
+
+  emailjs.send(serviceId, templateId, params)
+    .then(() => {
+      showToast('✅ Email envoyé à ' + to);
+      closeEmailModal();
+    })
+    .catch(err => {
+      showToast('❌ Erreur : ' + (err.text || 'vérifiez vos identifiants'));
+    });
+}
+
+// ==================== RESET ====================
+function resetAll() {
+  if (!confirm('Réinitialiser toute la checklist ?')) return;
+  document.querySelectorAll('.check-item').forEach(i => i.classList.remove('checked'));
+  document.getElementById('obsText').value = '';
+  document.getElementById('sigName').value = '';
+  document.getElementById('sigLicense').value = '';
+  document.getElementById('sigDate').value = '';
+  document.getElementById('sigVisa').value = '';
+  currentDecision = null;
+  document.querySelectorAll('.decision-btn').forEach(b => b.classList.remove('selected'));
+  updateProgress();
+  updateSectionBadges();
+  showToast('↺ Checklist réinitialisée');
+}
+
+// ==================== TOAST ====================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Init badges
+setTimeout(() => {
+  updateSectionBadges();
+  updateProgress();
+}, 100);
+</script>
+</body>
+</html>
